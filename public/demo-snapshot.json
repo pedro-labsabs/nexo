@@ -1,0 +1,1335 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "createdAt": "2026-11-01T12:00:00Z",
+    "referenceDate": "2026-11-01T12:00:00Z",
+    "authenticatedUser": "alexdev",
+    "totalRepositories": 8,
+    "incompleteSync": false,
+    "syncWarnings": [
+      "Repositório alexdev/pesquisa-inacessivel teve acesso à árvore negado (HTTP 403)."
+    ]
+  },
+  "organizations": [
+    {
+      "id": 101,
+      "login": "inova-labs",
+      "name": "Inova Labs Brasil",
+      "avatarUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&auto=format&fit=crop&q=60",
+      "description": "Núcleo de engenharia e observabilidade aplicada.",
+      "repositoryCount": 3
+    },
+    {
+      "id": 102,
+      "login": "rede-aberta",
+      "name": "Rede Aberta OpenSource",
+      "avatarUrl": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=100&auto=format&fit=crop&q=60",
+      "description": "Iniciativas de software livre e governança descentralizada.",
+      "repositoryCount": 2
+    }
+  ],
+  "repositories": [
+    {
+      "id": 1001,
+      "nodeId": "R_kgDOA1",
+      "name": "nexo-core",
+      "fullName": "inova-labs/nexo-core",
+      "owner": {
+        "login": "inova-labs",
+        "id": 101,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/inova-labs/nexo-core",
+      "description": "Motor de análise determinística e observabilidade de grafos de repositórios.",
+      "fork": false,
+      "createdAt": "2025-02-10T10:00:00Z",
+      "updatedAt": "2026-10-28T14:30:00Z",
+      "pushedAt": "2026-10-28T14:30:00Z",
+      "sizeKb": 14200,
+      "stargazersCount": 342,
+      "watchersCount": 28,
+      "openIssuesCount": 4,
+      "forksCount": 19,
+      "primaryLanguage": "TypeScript",
+      "languages": {
+        "TypeScript": 92000,
+        "CSS": 4500,
+        "HTML": 1200
+      },
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "organization_member",
+      "treeSignals": {
+        "hasTests": true,
+        "testEvidence": [
+          "tests/core.test.ts",
+          "vitest.config.ts",
+          "tests/indicators.test.ts"
+        ],
+        "hasCI": true,
+        "ciEvidence": [
+          ".github/workflows/ci.yml",
+          ".github/workflows/release.yml"
+        ],
+        "hasDocumentation": true,
+        "documentationEvidence": [
+          "docs/architecture.md",
+          "docs/indicators.md"
+        ],
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": true,
+        "licenseFileFound": true,
+        "treeTruncated": false,
+        "treeInspected": true
+      },
+      "indicators": {
+        "testInfrastructure": {
+          "id": "test_infrastructure",
+          "name": "Infraestrutura de Testes",
+          "status": "passed",
+          "score": 100,
+          "summary": "Detectados múltiplos sinais de testes: tests/core.test.ts, vitest.config.ts, tests/indicators.test.ts.",
+          "inputs": {
+            "hasTests": true,
+            "evidenceFound": [
+              "tests/core.test.ts",
+              "vitest.config.ts",
+              "tests/indicators.test.ts"
+            ],
+            "treeTruncated": false
+          },
+          "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
+          "limitations": [
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
+            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+          ]
+        },
+        "ciConfiguration": {
+          "id": "ci_configuration",
+          "name": "Configuração de CI/CD",
+          "status": "passed",
+          "score": 100,
+          "summary": "Fluxos de automação CI configurados: .github/workflows/ci.yml, .github/workflows/release.yml.",
+          "inputs": {
+            "hasCI": true,
+            "ciEvidence": [
+              ".github/workflows/ci.yml",
+              ".github/workflows/release.yml"
+            ]
+          },
+          "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
+          "limitations": [
+            "A existência de workflows não assegura que as execuções de CI estejam com status verde no GitHub.",
+            "Sistemas externos de CI (ex: CircleCI externo ou Jenkins sem manifesto no repo) podem não ser identificados."
+          ]
+        },
+        "documentation": {
+          "id": "documentation",
+          "name": "Documentação do Projeto",
+          "status": "passed",
+          "score": 100,
+          "summary": "Escore de documentação: 100/100 (README: Sim, Descrição: Sim).",
+          "inputs": {
+            "hasDescription": true,
+            "readmeFound": true,
+            "contributingFound": true,
+            "licenseFileFound": true,
+            "docEvidence": [
+              "docs/architecture.md",
+              "docs/indicators.md"
+            ]
+          },
+          "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
+          "limitations": [
+            "A presença de README.md não garante completude, clareza ou qualidade da documentação técnica.",
+            "Não avalia compreensão semântica do conteúdo textual."
+          ]
+        },
+        "activityRecency": {
+          "id": "activity_recency",
+          "name": "Recência de Atividade",
+          "status": "passed",
+          "score": 100,
+          "summary": "Atividade muito recente: último push há 3 dias.",
+          "inputs": {
+            "pushedAt": "2026-10-28T14:30:00Z",
+            "referenceDate": "2026-11-01T12:00:00.000Z",
+            "daysSinceLastPush": 3
+          },
+          "calculation": "<=30d: 100, <=90d: 80, <=180d: 60, <=365d: 40, >365d: 15.",
+          "limitations": [
+            "A recência de push mede frequência temporal, não produtividade, estabilidade ou valor do código.",
+            "Projetos maduros e estáveis podem ter baixa atividade recente propositalmente."
+          ]
+        },
+        "maintenanceSignals": {
+          "id": "maintenance_signals",
+          "name": "Sinais de Manutenção",
+          "status": "passed",
+          "score": 100,
+          "summary": "Sinais estruturais e operacionais ativos (Branch: main, Issues: 4).",
+          "inputs": {
+            "archived": false,
+            "disabled": false,
+            "openIssuesCount": 4,
+            "sizeKb": 14200,
+            "defaultBranch": "main"
+          },
+          "calculation": "Base 80, bônus para branch main (+10) e licença (+10), penalidades para repo vazio ou desativado.",
+          "limitations": [
+            "A quantidade de issues abertas NÃO é prova isolada de baixa qualidade (projetos populares recebem muitas issues).",
+            "Tamanho em KB não reflete a complexidade ou elegância da arquitetura."
+          ]
+        },
+        "overallQualityScore": 100
+      }
+    },
+    {
+      "id": 1002,
+      "nodeId": "R_kgDOA2",
+      "name": "telemetria-edge",
+      "fullName": "inova-labs/telemetria-edge",
+      "owner": {
+        "login": "inova-labs",
+        "id": 101,
+        "type": "Organization"
+      },
+      "isPrivate": true,
+      "htmlUrl": "https://github.com/inova-labs/telemetria-edge",
+      "description": "Agente leve para coleta de métricas em dispositivos edge.",
+      "fork": false,
+      "createdAt": "2025-06-15T08:00:00Z",
+      "updatedAt": "2026-09-15T11:00:00Z",
+      "pushedAt": "2026-09-15T11:00:00Z",
+      "sizeKb": 8900,
+      "stargazersCount": 12,
+      "watchersCount": 6,
+      "openIssuesCount": 1,
+      "forksCount": 2,
+      "primaryLanguage": "Rust",
+      "languages": {
+        "Rust": 64000,
+        "Shell": 1800
+      },
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "organization_member",
+      "treeSignals": {
+        "hasTests": true,
+        "testEvidence": [
+          "tests/client_test.rs"
+        ],
+        "hasCI": true,
+        "ciEvidence": [
+          ".github/workflows/test.yml"
+        ],
+        "hasDocumentation": true,
+        "documentationEvidence": [
+          "docs/setup.md"
+        ],
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": false,
+        "licenseFileFound": true,
+        "treeTruncated": false,
+        "treeInspected": true
+      },
+      "indicators": {
+        "testInfrastructure": {
+          "id": "test_infrastructure",
+          "name": "Infraestrutura de Testes",
+          "status": "partial",
+          "score": 70,
+          "summary": "Detectado sinal de teste: tests/client_test.rs.",
+          "inputs": {
+            "hasTests": true,
+            "evidenceFound": [
+              "tests/client_test.rs"
+            ],
+            "treeTruncated": false
+          },
+          "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
+          "limitations": [
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
+            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+          ]
+        },
+        "ciConfiguration": {
+          "id": "ci_configuration",
+          "name": "Configuração de CI/CD",
+          "status": "passed",
+          "score": 100,
+          "summary": "Fluxos de automação CI configurados: .github/workflows/test.yml.",
+          "inputs": {
+            "hasCI": true,
+            "ciEvidence": [
+              ".github/workflows/test.yml"
+            ]
+          },
+          "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
+          "limitations": [
+            "A existência de workflows não assegura que as execuções de CI estejam com status verde no GitHub.",
+            "Sistemas externos de CI (ex: CircleCI externo ou Jenkins sem manifesto no repo) podem não ser identificados."
+          ]
+        },
+        "documentation": {
+          "id": "documentation",
+          "name": "Documentação do Projeto",
+          "status": "passed",
+          "score": 90,
+          "summary": "Escore de documentação: 90/100 (README: Sim, Descrição: Sim).",
+          "inputs": {
+            "hasDescription": true,
+            "readmeFound": true,
+            "contributingFound": false,
+            "licenseFileFound": true,
+            "docEvidence": [
+              "docs/setup.md"
+            ]
+          },
+          "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
+          "limitations": [
+            "A presença de README.md não garante completude, clareza ou qualidade da documentação técnica.",
+            "Não avalia compreensão semântica do conteúdo textual."
+          ]
+        },
+        "activityRecency": {
+          "id": "activity_recency",
+          "name": "Recência de Atividade",
+          "status": "passed",
+          "score": 80,
+          "summary": "Atividade recente: último push há 47 dias.",
+          "inputs": {
+            "pushedAt": "2026-09-15T11:00:00Z",
+            "referenceDate": "2026-11-01T12:00:00.000Z",
+            "daysSinceLastPush": 47
+          },
+          "calculation": "<=30d: 100, <=90d: 80, <=180d: 60, <=365d: 40, >365d: 15.",
+          "limitations": [
+            "A recência de push mede frequência temporal, não produtividade, estabilidade ou valor do código.",
+            "Projetos maduros e estáveis podem ter baixa atividade recente propositalmente."
+          ]
+        },
+        "maintenanceSignals": {
+          "id": "maintenance_signals",
+          "name": "Sinais de Manutenção",
+          "status": "passed",
+          "score": 100,
+          "summary": "Sinais estruturais e operacionais ativos (Branch: main, Issues: 1).",
+          "inputs": {
+            "archived": false,
+            "disabled": false,
+            "openIssuesCount": 1,
+            "sizeKb": 8900,
+            "defaultBranch": "main"
+          },
+          "calculation": "Base 80, bônus para branch main (+10) e licença (+10), penalidades para repo vazio ou desativado.",
+          "limitations": [
+            "A quantidade de issues abertas NÃO é prova isolada de baixa qualidade (projetos populares recebem muitas issues).",
+            "Tamanho em KB não reflete a complexidade ou elegância da arquitetura."
+          ]
+        },
+        "overallQualityScore": 87
+      }
+    },
+    {
+      "id": 1003,
+      "nodeId": "R_kgDOA3",
+      "name": "legado-sincronizador",
+      "fullName": "inova-labs/legado-sincronizador",
+      "owner": {
+        "login": "inova-labs",
+        "id": 101,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/inova-labs/legado-sincronizador",
+      "description": "Antigo sincronizador cron v1 substituído pelo nexo-core.",
+      "fork": false,
+      "createdAt": "2023-01-10T12:00:00Z",
+      "updatedAt": "2024-05-10T10:00:00Z",
+      "pushedAt": "2024-05-10T10:00:00Z",
+      "sizeKb": 3400,
+      "stargazersCount": 18,
+      "watchersCount": 4,
+      "openIssuesCount": 0,
+      "forksCount": 3,
+      "primaryLanguage": "Python",
+      "languages": {
+        "Python": 32000
+      },
+      "archived": true,
+      "disabled": false,
+      "defaultBranch": "master",
+      "affiliation": "organization_member",
+      "treeSignals": {
+        "hasTests": false,
+        "testEvidence": [],
+        "hasCI": false,
+        "ciEvidence": [],
+        "hasDocumentation": false,
+        "documentationEvidence": [],
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": false,
+        "licenseFileFound": false,
+        "treeTruncated": false,
+        "treeInspected": true
+      },
+      "indicators": {
+        "testInfrastructure": {
+          "id": "test_infrastructure",
+          "name": "Infraestrutura de Testes",
+          "status": "failed",
+          "score": 0,
+          "summary": "Nenhuma configuração ou diretório de testes detectado na árvore inspecionada.",
+          "inputs": {
+            "hasTests": false,
+            "evidenceFound": [],
+            "treeTruncated": false
+          },
+          "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
+          "limitations": [
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
+            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+          ]
+        },
+        "ciConfiguration": {
+          "id": "ci_configuration",
+          "name": "Configuração de CI/CD",
+          "status": "failed",
+          "score": 0,
+          "summary": "Nenhum arquivo de automação CI/CD (.github/workflows, etc.) encontrado.",
+          "inputs": {
+            "hasCI": false,
+            "ciEvidence": []
+          },
+          "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
+          "limitations": [
+            "A existência de workflows não assegura que as execuções de CI estejam com status verde no GitHub.",
+            "Sistemas externos de CI (ex: CircleCI externo ou Jenkins sem manifesto no repo) podem não ser identificados."
+          ]
+        },
+        "documentation": {
+          "id": "documentation",
+          "name": "Documentação do Projeto",
+          "status": "partial",
+          "score": 60,
+          "summary": "Escore de documentação: 60/100 (README: Sim, Descrição: Sim).",
+          "inputs": {
+            "hasDescription": true,
+            "readmeFound": true,
+            "contributingFound": false,
+            "licenseFileFound": false,
+            "docEvidence": []
+          },
+          "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
+          "limitations": [
+            "A presença de README.md não garante completude, clareza ou qualidade da documentação técnica.",
+            "Não avalia compreensão semântica do conteúdo textual."
+          ]
+        },
+        "activityRecency": {
+          "id": "activity_recency",
+          "name": "Recência de Atividade",
+          "status": "failed",
+          "score": 15,
+          "summary": "Repositório inativo há mais de 1 ano (905 dias desde o último push).",
+          "inputs": {
+            "pushedAt": "2024-05-10T10:00:00Z",
+            "referenceDate": "2026-11-01T12:00:00.000Z",
+            "daysSinceLastPush": 905
+          },
+          "calculation": "<=30d: 100, <=90d: 80, <=180d: 60, <=365d: 40, >365d: 15.",
+          "limitations": [
+            "A recência de push mede frequência temporal, não produtividade, estabilidade ou valor do código.",
+            "Projetos maduros e estáveis podem ter baixa atividade recente propositalmente."
+          ]
+        },
+        "maintenanceSignals": {
+          "id": "maintenance_signals",
+          "name": "Sinais de Manutenção",
+          "status": "failed",
+          "score": 10,
+          "summary": "Repositório arquivado (somente leitura).",
+          "inputs": {
+            "archived": true,
+            "disabled": false,
+            "openIssuesCount": 0,
+            "sizeKb": 3400,
+            "defaultBranch": "master"
+          },
+          "calculation": "Repositórios arquivados recebem pontuação 10.",
+          "limitations": [
+            "O arquivamento sinaliza encerramento formal de manutenção no GitHub."
+          ]
+        },
+        "overallQualityScore": 19
+      }
+    },
+    {
+      "id": 2001,
+      "nodeId": "R_kgDOB1",
+      "name": "protocolo-aberto",
+      "fullName": "rede-aberta/protocolo-aberto",
+      "owner": {
+        "login": "rede-aberta",
+        "id": 102,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/rede-aberta/protocolo-aberto",
+      "description": "Especificações e esquemas formais para compartilhamento federado de dados.",
+      "fork": false,
+      "createdAt": "2024-03-20T14:00:00Z",
+      "updatedAt": "2026-10-20T16:00:00Z",
+      "pushedAt": "2026-10-20T16:00:00Z",
+      "sizeKb": 5600,
+      "stargazersCount": 512,
+      "watchersCount": 45,
+      "openIssuesCount": 15,
+      "forksCount": 48,
+      "primaryLanguage": "Go",
+      "languages": {
+        "Go": 85000,
+        "ProtocolBuffers": 12000
+      },
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "collaborator",
+      "treeSignals": {
+        "hasTests": true,
+        "testEvidence": [
+          "specs/validator_test.go"
+        ],
+        "hasCI": true,
+        "ciEvidence": [
+          ".github/workflows/verify.yml"
+        ],
+        "hasDocumentation": true,
+        "documentationEvidence": [
+          "docs/rfc-001.md",
+          "docs/security.md"
+        ],
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": true,
+        "licenseFileFound": true,
+        "treeTruncated": false,
+        "treeInspected": true
+      },
+      "indicators": {
+        "testInfrastructure": {
+          "id": "test_infrastructure",
+          "name": "Infraestrutura de Testes",
+          "status": "partial",
+          "score": 70,
+          "summary": "Detectado sinal de teste: specs/validator_test.go.",
+          "inputs": {
+            "hasTests": true,
+            "evidenceFound": [
+              "specs/validator_test.go"
+            ],
+            "treeTruncated": false
+          },
+          "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
+          "limitations": [
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
+            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+          ]
+        },
+        "ciConfiguration": {
+          "id": "ci_configuration",
+          "name": "Configuração de CI/CD",
+          "status": "passed",
+          "score": 100,
+          "summary": "Fluxos de automação CI configurados: .github/workflows/verify.yml.",
+          "inputs": {
+            "hasCI": true,
+            "ciEvidence": [
+              ".github/workflows/verify.yml"
+            ]
+          },
+          "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
+          "limitations": [
+            "A existência de workflows não assegura que as execuções de CI estejam com status verde no GitHub.",
+            "Sistemas externos de CI (ex: CircleCI externo ou Jenkins sem manifesto no repo) podem não ser identificados."
+          ]
+        },
+        "documentation": {
+          "id": "documentation",
+          "name": "Documentação do Projeto",
+          "status": "passed",
+          "score": 100,
+          "summary": "Escore de documentação: 100/100 (README: Sim, Descrição: Sim).",
+          "inputs": {
+            "hasDescription": true,
+            "readmeFound": true,
+            "contributingFound": true,
+            "licenseFileFound": true,
+            "docEvidence": [
+              "docs/rfc-001.md",
+              "docs/security.md"
+            ]
+          },
+          "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
+          "limitations": [
+            "A presença de README.md não garante completude, clareza ou qualidade da documentação técnica.",
+            "Não avalia compreensão semântica do conteúdo textual."
+          ]
+        },
+        "activityRecency": {
+          "id": "activity_recency",
+          "name": "Recência de Atividade",
+          "status": "passed",
+          "score": 100,
+          "summary": "Atividade muito recente: último push há 11 dias.",
+          "inputs": {
+            "pushedAt": "2026-10-20T16:00:00Z",
+            "referenceDate": "2026-11-01T12:00:00.000Z",
+            "daysSinceLastPush": 11
+          },
+          "calculation": "<=30d: 100, <=90d: 80, <=180d: 60, <=365d: 40, >365d: 15.",
+          "limitations": [
+            "A recência de push mede frequência temporal, não produtividade, estabilidade ou valor do código.",
+            "Projetos maduros e estáveis podem ter baixa atividade recente propositalmente."
+          ]
+        },
+        "maintenanceSignals": {
+          "id": "maintenance_signals",
+          "name": "Sinais de Manutenção",
+          "status": "passed",
+          "score": 100,
+          "summary": "Sinais estruturais e operacionais ativos (Branch: main, Issues: 15).",
+          "inputs": {
+            "archived": false,
+            "disabled": false,
+            "openIssuesCount": 15,
+            "sizeKb": 5600,
+            "defaultBranch": "main"
+          },
+          "calculation": "Base 80, bônus para branch main (+10) e licença (+10), penalidades para repo vazio ou desativado.",
+          "limitations": [
+            "A quantidade de issues abertas NÃO é prova isolada de baixa qualidade (projetos populares recebem muitas issues).",
+            "Tamanho em KB não reflete a complexidade ou elegância da arquitetura."
+          ]
+        },
+        "overallQualityScore": 93
+      }
+    },
+    {
+      "id": 2002,
+      "nodeId": "R_kgDOB2",
+      "name": "sdk-javascript",
+      "fullName": "rede-aberta/sdk-javascript",
+      "owner": {
+        "login": "rede-aberta",
+        "id": 102,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/rede-aberta/sdk-javascript",
+      "description": "Cliente isomórfico TypeScript para consumo do protocolo aberto.",
+      "fork": false,
+      "createdAt": "2025-01-15T09:00:00Z",
+      "updatedAt": "2026-10-25T17:00:00Z",
+      "pushedAt": "2026-10-25T17:00:00Z",
+      "sizeKb": 7200,
+      "stargazersCount": 180,
+      "watchersCount": 15,
+      "openIssuesCount": 2,
+      "forksCount": 14,
+      "primaryLanguage": "TypeScript",
+      "languages": {
+        "TypeScript": 56000
+      },
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "collaborator",
+      "treeSignals": {
+        "hasTests": true,
+        "testEvidence": [
+          "test/client.spec.ts",
+          "vitest.config.ts"
+        ],
+        "hasCI": true,
+        "ciEvidence": [
+          ".github/workflows/ci.yml"
+        ],
+        "hasDocumentation": true,
+        "documentationEvidence": [
+          "docs/api.md"
+        ],
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": true,
+        "licenseFileFound": true,
+        "treeTruncated": false,
+        "treeInspected": true
+      },
+      "indicators": {
+        "testInfrastructure": {
+          "id": "test_infrastructure",
+          "name": "Infraestrutura de Testes",
+          "status": "passed",
+          "score": 100,
+          "summary": "Detectados múltiplos sinais de testes: test/client.spec.ts, vitest.config.ts.",
+          "inputs": {
+            "hasTests": true,
+            "evidenceFound": [
+              "test/client.spec.ts",
+              "vitest.config.ts"
+            ],
+            "treeTruncated": false
+          },
+          "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
+          "limitations": [
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
+            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+          ]
+        },
+        "ciConfiguration": {
+          "id": "ci_configuration",
+          "name": "Configuração de CI/CD",
+          "status": "passed",
+          "score": 100,
+          "summary": "Fluxos de automação CI configurados: .github/workflows/ci.yml.",
+          "inputs": {
+            "hasCI": true,
+            "ciEvidence": [
+              ".github/workflows/ci.yml"
+            ]
+          },
+          "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
+          "limitations": [
+            "A existência de workflows não assegura que as execuções de CI estejam com status verde no GitHub.",
+            "Sistemas externos de CI (ex: CircleCI externo ou Jenkins sem manifesto no repo) podem não ser identificados."
+          ]
+        },
+        "documentation": {
+          "id": "documentation",
+          "name": "Documentação do Projeto",
+          "status": "passed",
+          "score": 100,
+          "summary": "Escore de documentação: 100/100 (README: Sim, Descrição: Sim).",
+          "inputs": {
+            "hasDescription": true,
+            "readmeFound": true,
+            "contributingFound": true,
+            "licenseFileFound": true,
+            "docEvidence": [
+              "docs/api.md"
+            ]
+          },
+          "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
+          "limitations": [
+            "A presença de README.md não garante completude, clareza ou qualidade da documentação técnica.",
+            "Não avalia compreensão semântica do conteúdo textual."
+          ]
+        },
+        "activityRecency": {
+          "id": "activity_recency",
+          "name": "Recência de Atividade",
+          "status": "passed",
+          "score": 100,
+          "summary": "Atividade muito recente: último push há 6 dias.",
+          "inputs": {
+            "pushedAt": "2026-10-25T17:00:00Z",
+            "referenceDate": "2026-11-01T12:00:00.000Z",
+            "daysSinceLastPush": 6
+          },
+          "calculation": "<=30d: 100, <=90d: 80, <=180d: 60, <=365d: 40, >365d: 15.",
+          "limitations": [
+            "A recência de push mede frequência temporal, não produtividade, estabilidade ou valor do código.",
+            "Projetos maduros e estáveis podem ter baixa atividade recente propositalmente."
+          ]
+        },
+        "maintenanceSignals": {
+          "id": "maintenance_signals",
+          "name": "Sinais de Manutenção",
+          "status": "passed",
+          "score": 100,
+          "summary": "Sinais estruturais e operacionais ativos (Branch: main, Issues: 2).",
+          "inputs": {
+            "archived": false,
+            "disabled": false,
+            "openIssuesCount": 2,
+            "sizeKb": 7200,
+            "defaultBranch": "main"
+          },
+          "calculation": "Base 80, bônus para branch main (+10) e licença (+10), penalidades para repo vazio ou desativado.",
+          "limitations": [
+            "A quantidade de issues abertas NÃO é prova isolada de baixa qualidade (projetos populares recebem muitas issues).",
+            "Tamanho em KB não reflete a complexidade ou elegância da arquitetura."
+          ]
+        },
+        "overallQualityScore": 100
+      }
+    },
+    {
+      "id": 3001,
+      "nodeId": "R_kgDOC1",
+      "name": "portifolio-pessoal",
+      "fullName": "alexdev/portifolio-pessoal",
+      "owner": {
+        "login": "alexdev",
+        "id": 501,
+        "type": "User"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/alexdev/portifolio-pessoal",
+      "description": "Site pessoal e vitrine de projetos com integração estática.",
+      "fork": false,
+      "createdAt": "2024-08-01T10:00:00Z",
+      "updatedAt": "2026-08-10T12:00:00Z",
+      "pushedAt": "2026-08-10T12:00:00Z",
+      "sizeKb": 3100,
+      "stargazersCount": 35,
+      "watchersCount": 3,
+      "openIssuesCount": 1,
+      "forksCount": 2,
+      "primaryLanguage": "TypeScript",
+      "languages": {
+        "TypeScript": 28000,
+        "CSS": 12000
+      },
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": false,
+        "testEvidence": [],
+        "hasCI": true,
+        "ciEvidence": [
+          ".github/workflows/deploy.yml"
+        ],
+        "hasDocumentation": true,
+        "documentationEvidence": [],
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": false,
+        "licenseFileFound": true,
+        "treeTruncated": false,
+        "treeInspected": true
+      },
+      "indicators": {
+        "testInfrastructure": {
+          "id": "test_infrastructure",
+          "name": "Infraestrutura de Testes",
+          "status": "failed",
+          "score": 0,
+          "summary": "Nenhuma configuração ou diretório de testes detectado na árvore inspecionada.",
+          "inputs": {
+            "hasTests": false,
+            "evidenceFound": [],
+            "treeTruncated": false
+          },
+          "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
+          "limitations": [
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
+            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+          ]
+        },
+        "ciConfiguration": {
+          "id": "ci_configuration",
+          "name": "Configuração de CI/CD",
+          "status": "passed",
+          "score": 100,
+          "summary": "Fluxos de automação CI configurados: .github/workflows/deploy.yml.",
+          "inputs": {
+            "hasCI": true,
+            "ciEvidence": [
+              ".github/workflows/deploy.yml"
+            ]
+          },
+          "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
+          "limitations": [
+            "A existência de workflows não assegura que as execuções de CI estejam com status verde no GitHub.",
+            "Sistemas externos de CI (ex: CircleCI externo ou Jenkins sem manifesto no repo) podem não ser identificados."
+          ]
+        },
+        "documentation": {
+          "id": "documentation",
+          "name": "Documentação do Projeto",
+          "status": "passed",
+          "score": 70,
+          "summary": "Escore de documentação: 70/100 (README: Sim, Descrição: Sim).",
+          "inputs": {
+            "hasDescription": true,
+            "readmeFound": true,
+            "contributingFound": false,
+            "licenseFileFound": true,
+            "docEvidence": []
+          },
+          "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
+          "limitations": [
+            "A presença de README.md não garante completude, clareza ou qualidade da documentação técnica.",
+            "Não avalia compreensão semântica do conteúdo textual."
+          ]
+        },
+        "activityRecency": {
+          "id": "activity_recency",
+          "name": "Recência de Atividade",
+          "status": "passed",
+          "score": 80,
+          "summary": "Atividade recente: último push há 83 dias.",
+          "inputs": {
+            "pushedAt": "2026-08-10T12:00:00Z",
+            "referenceDate": "2026-11-01T12:00:00.000Z",
+            "daysSinceLastPush": 83
+          },
+          "calculation": "<=30d: 100, <=90d: 80, <=180d: 60, <=365d: 40, >365d: 15.",
+          "limitations": [
+            "A recência de push mede frequência temporal, não produtividade, estabilidade ou valor do código.",
+            "Projetos maduros e estáveis podem ter baixa atividade recente propositalmente."
+          ]
+        },
+        "maintenanceSignals": {
+          "id": "maintenance_signals",
+          "name": "Sinais de Manutenção",
+          "status": "passed",
+          "score": 100,
+          "summary": "Sinais estruturais e operacionais ativos (Branch: main, Issues: 1).",
+          "inputs": {
+            "archived": false,
+            "disabled": false,
+            "openIssuesCount": 1,
+            "sizeKb": 3100,
+            "defaultBranch": "main"
+          },
+          "calculation": "Base 80, bônus para branch main (+10) e licença (+10), penalidades para repo vazio ou desativado.",
+          "limitations": [
+            "A quantidade de issues abertas NÃO é prova isolada de baixa qualidade (projetos populares recebem muitas issues).",
+            "Tamanho em KB não reflete a complexidade ou elegância da arquitetura."
+          ]
+        },
+        "overallQualityScore": 65
+      }
+    },
+    {
+      "id": 3002,
+      "nodeId": "R_kgDOC2",
+      "name": "analisador-estatistico-experimento",
+      "fullName": "alexdev/analisador-estatistico-experimento",
+      "owner": {
+        "login": "alexdev",
+        "id": 501,
+        "type": "User"
+      },
+      "isPrivate": true,
+      "htmlUrl": "https://github.com/alexdev/analisador-estatistico-experimento",
+      "description": "Rascunho de análise estatística de dados de telemetria.",
+      "fork": false,
+      "createdAt": "2026-04-10T11:00:00Z",
+      "updatedAt": "2026-05-01T15:00:00Z",
+      "pushedAt": "2026-05-01T15:00:00Z",
+      "sizeKb": 1200,
+      "stargazersCount": 2,
+      "watchersCount": 1,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": "Python",
+      "languages": {
+        "Python": 15000
+      },
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": false,
+        "testEvidence": [],
+        "hasCI": false,
+        "ciEvidence": [],
+        "hasDocumentation": false,
+        "documentationEvidence": [],
+        "readmeFound": false,
+        "contributingFound": false,
+        "licenseFileFound": false,
+        "treeTruncated": false,
+        "treeInspected": true
+      },
+      "indicators": {
+        "testInfrastructure": {
+          "id": "test_infrastructure",
+          "name": "Infraestrutura de Testes",
+          "status": "failed",
+          "score": 0,
+          "summary": "Nenhuma configuração ou diretório de testes detectado na árvore inspecionada.",
+          "inputs": {
+            "hasTests": false,
+            "evidenceFound": [],
+            "treeTruncated": false
+          },
+          "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
+          "limitations": [
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
+            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+          ]
+        },
+        "ciConfiguration": {
+          "id": "ci_configuration",
+          "name": "Configuração de CI/CD",
+          "status": "failed",
+          "score": 0,
+          "summary": "Nenhum arquivo de automação CI/CD (.github/workflows, etc.) encontrado.",
+          "inputs": {
+            "hasCI": false,
+            "ciEvidence": []
+          },
+          "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
+          "limitations": [
+            "A existência de workflows não assegura que as execuções de CI estejam com status verde no GitHub.",
+            "Sistemas externos de CI (ex: CircleCI externo ou Jenkins sem manifesto no repo) podem não ser identificados."
+          ]
+        },
+        "documentation": {
+          "id": "documentation",
+          "name": "Documentação do Projeto",
+          "status": "failed",
+          "score": 20,
+          "summary": "Escore de documentação: 20/100 (README: Não, Descrição: Sim).",
+          "inputs": {
+            "hasDescription": true,
+            "readmeFound": false,
+            "contributingFound": false,
+            "licenseFileFound": false,
+            "docEvidence": []
+          },
+          "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
+          "limitations": [
+            "A presença de README.md não garante completude, clareza ou qualidade da documentação técnica.",
+            "Não avalia compreensão semântica do conteúdo textual."
+          ]
+        },
+        "activityRecency": {
+          "id": "activity_recency",
+          "name": "Recência de Atividade",
+          "status": "partial",
+          "score": 40,
+          "summary": "Atividade baixa: último push há 183 dias (~6 meses).",
+          "inputs": {
+            "pushedAt": "2026-05-01T15:00:00Z",
+            "referenceDate": "2026-11-01T12:00:00.000Z",
+            "daysSinceLastPush": 183
+          },
+          "calculation": "<=30d: 100, <=90d: 80, <=180d: 60, <=365d: 40, >365d: 15.",
+          "limitations": [
+            "A recência de push mede frequência temporal, não produtividade, estabilidade ou valor do código.",
+            "Projetos maduros e estáveis podem ter baixa atividade recente propositalmente."
+          ]
+        },
+        "maintenanceSignals": {
+          "id": "maintenance_signals",
+          "name": "Sinais de Manutenção",
+          "status": "passed",
+          "score": 90,
+          "summary": "Sinais estruturais e operacionais ativos (Branch: main, Issues: 0).",
+          "inputs": {
+            "archived": false,
+            "disabled": false,
+            "openIssuesCount": 0,
+            "sizeKb": 1200,
+            "defaultBranch": "main"
+          },
+          "calculation": "Base 80, bônus para branch main (+10) e licença (+10), penalidades para repo vazio ou desativado.",
+          "limitations": [
+            "A quantidade de issues abertas NÃO é prova isolada de baixa qualidade (projetos populares recebem muitas issues).",
+            "Tamanho em KB não reflete a complexidade ou elegância da arquitetura."
+          ]
+        },
+        "overallQualityScore": 25
+      }
+    },
+    {
+      "id": 3003,
+      "nodeId": "R_kgDOC3",
+      "name": "pesquisa-inacessivel",
+      "fullName": "alexdev/pesquisa-inacessivel",
+      "owner": {
+        "login": "alexdev",
+        "id": 501,
+        "type": "User"
+      },
+      "isPrivate": true,
+      "htmlUrl": "https://github.com/alexdev/pesquisa-inacessivel",
+      "description": "Repositório restrito cuja árvore de arquivos não pôde ser lida por permissões.",
+      "fork": false,
+      "createdAt": "2026-01-05T10:00:00Z",
+      "updatedAt": "2026-07-20T12:00:00Z",
+      "pushedAt": "2026-07-20T12:00:00Z",
+      "sizeKb": 450,
+      "stargazersCount": 0,
+      "watchersCount": 1,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": null,
+      "languages": {},
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": false,
+        "testEvidence": [],
+        "hasCI": false,
+        "ciEvidence": [],
+        "hasDocumentation": false,
+        "documentationEvidence": [],
+        "readmeFound": false,
+        "contributingFound": false,
+        "licenseFileFound": false,
+        "treeTruncated": false,
+        "treeInspected": false,
+        "inspectionError": "403 Forbidden: Tree access denied or repository empty"
+      },
+      "indicators": {
+        "testInfrastructure": {
+          "id": "test_infrastructure",
+          "name": "Infraestrutura de Testes",
+          "status": "unknown",
+          "score": 0,
+          "summary": "Árvore de arquivos não inspecionada ou inacessível via API.",
+          "inputs": {
+            "treeInspected": false,
+            "inspectionError": "403 Forbidden: Tree access denied or repository empty"
+          },
+          "calculation": "Nenhum dado de arquivo disponível para inspeção.",
+          "limitations": [
+            "A ausência de acesso à árvore impede checar arquivos de testes.",
+            "Não foi presumido resultado negativo."
+          ]
+        },
+        "ciConfiguration": {
+          "id": "ci_configuration",
+          "name": "Configuração de CI/CD",
+          "status": "unknown",
+          "score": 0,
+          "summary": "Árvore de arquivos não inspecionada ou inacessível.",
+          "inputs": {
+            "treeInspected": false
+          },
+          "calculation": "Nenhum dado de arquivo disponível.",
+          "limitations": [
+            "Sem acesso aos arquivos do repositório para verificar diretórios de workflows."
+          ]
+        },
+        "documentation": {
+          "id": "documentation",
+          "name": "Documentação do Projeto",
+          "status": "unknown",
+          "score": 40,
+          "summary": "Descrição básica presente, mas arquivos de documentação não puderam ser verificados.",
+          "inputs": {
+            "hasDescription": true,
+            "readmeFound": false,
+            "contributingFound": false,
+            "licenseFileFound": false,
+            "docEvidence": []
+          },
+          "calculation": "Baseado apenas na descrição do repositório devido a árvore inacessível.",
+          "limitations": [
+            "Árvore de arquivos inacessível; checagem de README e guias não pôde ser executada."
+          ]
+        },
+        "activityRecency": {
+          "id": "activity_recency",
+          "name": "Recência de Atividade",
+          "status": "partial",
+          "score": 60,
+          "summary": "Atividade moderada: último push há 104 dias (~3 meses).",
+          "inputs": {
+            "pushedAt": "2026-07-20T12:00:00Z",
+            "referenceDate": "2026-11-01T12:00:00.000Z",
+            "daysSinceLastPush": 104
+          },
+          "calculation": "<=30d: 100, <=90d: 80, <=180d: 60, <=365d: 40, >365d: 15.",
+          "limitations": [
+            "A recência de push mede frequência temporal, não produtividade, estabilidade ou valor do código.",
+            "Projetos maduros e estáveis podem ter baixa atividade recente propositalmente."
+          ]
+        },
+        "maintenanceSignals": {
+          "id": "maintenance_signals",
+          "name": "Sinais de Manutenção",
+          "status": "passed",
+          "score": 90,
+          "summary": "Sinais estruturais e operacionais ativos (Branch: main, Issues: 0).",
+          "inputs": {
+            "archived": false,
+            "disabled": false,
+            "openIssuesCount": 0,
+            "sizeKb": 450,
+            "defaultBranch": "main"
+          },
+          "calculation": "Base 80, bônus para branch main (+10) e licença (+10), penalidades para repo vazio ou desativado.",
+          "limitations": [
+            "A quantidade de issues abertas NÃO é prova isolada de baixa qualidade (projetos populares recebem muitas issues).",
+            "Tamanho em KB não reflete a complexidade ou elegância da arquitetura."
+          ]
+        },
+        "overallQualityScore": 75
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_1001_101",
+      "source": "1001",
+      "target": "101",
+      "sourceType": "repository",
+      "targetType": "organization",
+      "type": "belongs_to",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Organização proprietária no GitHub: inova-labs",
+      "description": "Repositório mantido por Inova Labs",
+      "createdAt": "2025-02-10T10:00:00Z"
+    },
+    {
+      "id": "rel_1002_101",
+      "source": "1002",
+      "target": "101",
+      "sourceType": "repository",
+      "targetType": "organization",
+      "type": "belongs_to",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Organização proprietária no GitHub: inova-labs",
+      "description": "Repositório mantido por Inova Labs",
+      "createdAt": "2025-06-15T08:00:00Z"
+    },
+    {
+      "id": "rel_1003_101",
+      "source": "1003",
+      "target": "101",
+      "sourceType": "repository",
+      "targetType": "organization",
+      "type": "belongs_to",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Organização proprietária no GitHub: inova-labs",
+      "description": "Repositório legado arquivado",
+      "createdAt": "2023-01-10T12:00:00Z"
+    },
+    {
+      "id": "rel_2001_102",
+      "source": "2001",
+      "target": "102",
+      "sourceType": "repository",
+      "targetType": "organization",
+      "type": "belongs_to",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Organização proprietária no GitHub: rede-aberta",
+      "description": "Repositório de especificação de Rede Aberta",
+      "createdAt": "2024-03-20T14:00:00Z"
+    },
+    {
+      "id": "rel_2002_102",
+      "source": "2002",
+      "target": "102",
+      "sourceType": "repository",
+      "targetType": "organization",
+      "type": "belongs_to",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Organização proprietária no GitHub: rede-aberta",
+      "description": "SDK oficial de Rede Aberta",
+      "createdAt": "2025-01-15T09:00:00Z"
+    },
+    {
+      "id": "rel_sdk_depends_protocol",
+      "source": "2002",
+      "target": "2001",
+      "sourceType": "repository",
+      "targetType": "repository",
+      "type": "depends_on",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Dependência referenciada explicitamente em package.json (@rede-aberta/protocolo-aberto: ^1.2.0)",
+      "description": "SDK consome schemas do protocolo aberto",
+      "createdAt": "2025-01-15T09:00:00Z"
+    },
+    {
+      "id": "rel_nexo_references_sdk",
+      "source": "1001",
+      "target": "2002",
+      "sourceType": "repository",
+      "targetType": "repository",
+      "type": "references",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Link explícito no README.md: \"Para integrar com redes federadas, veja https://github.com/rede-aberta/sdk-javascript\"",
+      "description": "Documentação do nexo-core referencia o sdk-javascript",
+      "createdAt": "2025-02-10T10:00:00Z"
+    },
+    {
+      "id": "rel_manual_telemetria_pesquisa",
+      "source": "3002",
+      "target": "1002",
+      "sourceType": "repository",
+      "targetType": "repository",
+      "type": "custom",
+      "provenance": "manual",
+      "verified": false,
+      "evidence": "Anotação do usuário: analisador consome dados brutos gerados pela telemetria-edge em ambiente de teste.",
+      "description": "Consumo experimental de métricas da telemetria edge",
+      "createdAt": "2026-10-30T10:00:00Z"
+    }
+  ],
+  "userAnnotations": {
+    "schemaVersion": "1.0",
+    "exportedAt": "2026-11-01T12:00:00Z",
+    "manualRelationships": [
+      {
+        "id": "rel_manual_telemetria_pesquisa",
+        "source": "3002",
+        "target": "1002",
+        "sourceType": "repository",
+        "targetType": "repository",
+        "type": "custom",
+        "provenance": "manual",
+        "verified": false,
+        "evidence": "Anotação do usuário: analisador consome dados brutos gerados pela telemetria-edge em ambiente de teste.",
+        "description": "Consumo experimental de métricas da telemetria edge",
+        "createdAt": "2026-10-30T10:00:00Z"
+      }
+    ],
+    "potentialAssessments": {
+      "1001": {
+        "repositoryId": 1001,
+        "strategicValue": "critical",
+        "commercialPotential": "production_ready",
+        "targetAudience": "Equipes de engenharia de software e observabilidade de código",
+        "notes": "Núcleo central para visibilidade técnica de repositórios.",
+        "tags": [
+          "observabilidade",
+          "local-first",
+          "grafos"
+        ],
+        "updatedAt": "2026-10-29T11:00:00Z"
+      },
+      "1002": {
+        "repositoryId": 1002,
+        "strategicValue": "high",
+        "commercialPotential": "viable",
+        "targetAudience": "Operações de infraestrutura e dispositivos remotos",
+        "notes": "Componente importante para telemetria de campo.",
+        "tags": [
+          "rust",
+          "iot",
+          "edge"
+        ],
+        "updatedAt": "2026-10-29T11:05:00Z"
+      }
+    }
+  }
+}

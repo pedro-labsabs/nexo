@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Production builds
+dist/
+dist-cli/
+
+# Snapshots (keep demo snapshots tracked, ignore real user snapshots)
+snapshots/
+*.snapshot.json
+!public/demo-snapshot.json
+!src/demo/demo-snapshot.json
+
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+*.log
+
+# Editor & OS files
+.DS_Store
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.tsbuildinfo
