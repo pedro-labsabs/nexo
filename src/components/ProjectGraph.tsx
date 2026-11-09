@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cytoscape, { Core } from 'cytoscape';
-import { Repository, Organization, Relationship } from '../shared/types.js';
-import { ZoomIn, ZoomOut, Maximize2, Plus } from 'lucide-react';
+import { Repository, Organization, Relationship, RelationType } from '../shared/types.js';
+import { ZoomIn, ZoomOut, Maximize2, Plus, Edit2, Trash2 } from 'lucide-react';
 
 interface ProjectGraphProps {
   repositories: Repository[];
@@ -9,6 +9,8 @@ interface ProjectGraphProps {
   relationships: Relationship[];
   onSelectNode: (repo: Repository) => void;
   onAddManualRelationship: (rel: Relationship) => void;
+  onUpdateManualRelationship?: (rel: Relationship) => void;
+  onDeleteManualRelationship?: (relId: string) => void;
   theme: 'light' | 'dark';
 }
 
@@ -18,11 +20,14 @@ export const ProjectGraph: React.FC<ProjectGraphProps> = ({
   relationships,
   onSelectNode,
   onAddManualRelationship,
+  onUpdateManualRelationship,
+  onDeleteManualRelationship,
   theme,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<Core | null>(null);
 
+  const [selectedEdge, setSelectedEdge] = useState<Relationship | null>(null);
   const [selectedElementInfo, setSelectedElementInfo] = useState<{
     type: 'node' | 'edge';
     title: string;
@@ -31,11 +36,19 @@ export const ProjectGraph: React.FC<ProjectGraphProps> = ({
     provenance?: string;
   } | null>(null);
 
+  // Modal for creating a new manual relation
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalSource, setModalSource] = useState(repositories[0]?.id ? String(repositories[0].id) : '');
   const [modalTarget, setModalTarget] = useState(repositories[1]?.id ? String(repositories[1].id) : '');
-  const [modalType, setModalType] = useState<'references' | 'depends_on' | 'custom'>('custom');
+  const [modalType, setModalType] = useState<RelationType>('custom');
   const [modalEvidence, setModalEvidence] = useState('');
+
+  // Modal for editing an existing manual relation
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingRel, setEditingRel] = useState<Relationship | null>(null);
+  const [editTarget, setEditTarget] = useState('');
+  const [editType, setEditType] = useState<RelationType>('custom');
+  const [editEvidence, setEditEvidence] = useState('');
 
   // Builds Cytoscape elements
   useEffect(() => {
@@ -88,6 +101,7 @@ export const ProjectGraph: React.FC<ProjectGraphProps> = ({
           verified: rel.verified,
           evidence: rel.evidence,
           description: rel.description,
+          rawRel: rel,
         },
       });
     }
@@ -198,6 +212,7 @@ export const ProjectGraph: React.FC<ProjectGraphProps> = ({
 
     cy.on('tap', 'node', (evt) => {
       const node = evt.target;
+      setSelectedEdge(null);
       const nodeType = node.data('nodeType');
       if (nodeType === 'repository') {
         const repoId = Number(node.data('rawId'));
@@ -221,6 +236,8 @@ export const ProjectGraph: React.FC<ProjectGraphProps> = ({
 
     cy.on('tap', 'edge', (evt) => {
       const edge = evt.target;
+      const rawRel: Relationship = edge.data('rawRel');
+      setSelectedEdge(rawRel || null);
       setSelectedElementInfo({
         type: 'edge',
         title: `Relação: ${edge.data('relationType')}`,
@@ -248,6 +265,7 @@ export const ProjectGraph: React.FC<ProjectGraphProps> = ({
       return;
     }
 
+    const now = new Date().toISOString();
     const newRel: Relationship = {
       id: `manual_rel_${Date.now()}`,
       source: modalSource,
@@ -259,12 +277,51 @@ export const ProjectGraph: React.FC<ProjectGraphProps> = ({
       verified: false,
       evidence: modalEvidence || 'Inserido manualmente pelo usuário.',
       description: `Relação manual (${modalType})`,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
 
     onAddManualRelationship(newRel);
     setIsModalOpen(false);
     setModalEvidence('');
+  };
+
+  const handleOpenEditModal = (rel: Relationship) => {
+    setEditingRel(rel);
+    setEditTarget(rel.target);
+    setEditType(rel.type);
+    setEditEvidence(rel.evidence || '');
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditRelationshipSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRel || !editTarget || editingRel.source === editTarget) {
+      alert('Selecione um repositório de destino válido e distinto da origem.');
+      return;
+    }
+
+    const updatedRel: Relationship = {
+      ...editingRel,
+      target: editTarget,
+      type: editType,
+      evidence: editEvidence,
+      description: `Relação manual (${editType})`,
+      updatedAt: new Date().toISOString(),
+    };
+
+    onUpdateManualRelationship?.(updatedRel);
+    setIsEditModalOpen(false);
+    setEditingRel(null);
+    setSelectedEdge(updatedRel);
+  };
+
+  const handleDeleteClick = (relId: string) => {
+    if (window.confirm('Tem certeza de que deseja excluir esta relação manual? A exclusão será registrada e preservada nas anotações.')) {
+      onDeleteManualRelationship?.(relId);
+      setSelectedEdge(null);
+      setSelectedElementInfo(null);
+    }
   };
 
   return (
@@ -275,7 +332,7 @@ export const ProjectGraph: React.FC<ProjectGraphProps> = ({
             Mapa Interativo do Portfólio (Cytoscape.js)
           </h3>
           <span className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:inline">
-            Clique nos nós para inspecionar e veja as conexões comprovadas
+            Clique nos nós para inspecionar e nas arestas para ver ou editar detalhes
           </span>
         </div>
 
@@ -335,13 +392,16 @@ export const ProjectGraph: React.FC<ProjectGraphProps> = ({
         </div>
 
         {selectedElementInfo && (
-          <div className="absolute top-3 right-3 max-w-xs bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-200 dark:border-slate-800 p-3 rounded-lg text-xs shadow-md">
+          <div className="absolute top-3 right-3 max-w-sm bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl text-xs shadow-lg">
             <div className="flex items-center justify-between">
               <span className="font-bold text-slate-900 dark:text-slate-100 truncate">
                 {selectedElementInfo.title}
               </span>
               <button
-                onClick={() => setSelectedElementInfo(null)}
+                onClick={() => {
+                  setSelectedElementInfo(null);
+                  setSelectedEdge(null);
+                }}
                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 ml-2"
               >
                 ✕
@@ -351,19 +411,40 @@ export const ProjectGraph: React.FC<ProjectGraphProps> = ({
               {selectedElementInfo.details}
             </p>
             {selectedElementInfo.evidence && (
-              <div className="mt-1 text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 p-1.5 rounded">
+              <div className="mt-1.5 text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 p-1.5 rounded">
                 <strong>Evidência:</strong> {selectedElementInfo.evidence}
               </div>
             )}
             {selectedElementInfo.provenance && (
-              <div className="mt-1 text-[10px] font-semibold text-purple-600 dark:text-purple-400">
-                Proveniência: {selectedElementInfo.provenance === 'manual' ? 'Manual do Usuário' : 'Automática'}
+              <div className="mt-1.5 text-[10px] font-semibold text-purple-600 dark:text-purple-400 flex items-center justify-between">
+                <span>Proveniência: {selectedElementInfo.provenance === 'manual' ? 'Manual do Usuário' : 'Automática (Verificada)'}</span>
+              </div>
+            )}
+
+            {/* Manual Relationship Actions */}
+            {selectedEdge && selectedEdge.provenance === 'manual' && (
+              <div className="mt-3 pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2">
+                <button
+                  onClick={() => handleOpenEditModal(selectedEdge)}
+                  className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+                >
+                  <Edit2 className="w-3 h-3" />
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleDeleteClick(selectedEdge.id)}
+                  className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900 border border-rose-200 dark:border-rose-800 rounded transition-colors"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Excluir
+                </button>
               </div>
             )}
           </div>
         )}
       </div>
 
+      {/* Modal Add Manual Relationship */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-xl shadow-2xl p-5 border border-slate-200 dark:border-slate-800">
@@ -459,6 +540,114 @@ export const ProjectGraph: React.FC<ProjectGraphProps> = ({
                   className="px-4 py-1.5 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded-lg shadow-sm"
                 >
                   Adicionar Relação
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Edit Manual Relationship */}
+      {isEditModalOpen && editingRel && (
+        <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-xl shadow-2xl p-5 border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                <Edit2 className="w-4 h-4 text-purple-600" />
+                Editar Relação Manual
+              </h4>
+              <button
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setEditingRel(null);
+                }}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              Identificador estável: <span className="font-mono text-[11px]">{editingRel.id}</span>.
+              A edição atualiza a relação preservando seu histórico sem criar arestas duplicadas.
+            </p>
+
+            <form onSubmit={handleEditRelationshipSubmit} className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Repositório de Origem (Somente Leitura)
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={repositories.find((r) => String(r.id) === editingRel.source)?.fullName || editingRel.source}
+                  className="w-full text-xs p-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Repositório de Destino
+                </label>
+                <select
+                  value={editTarget}
+                  onChange={(e) => setEditTarget(e.target.value)}
+                  className="w-full text-xs p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                >
+                  {repositories
+                    .filter((r) => String(r.id) !== editingRel.source)
+                    .map((r) => (
+                      <option key={r.id} value={String(r.id)}>
+                        {r.fullName}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Tipo de Relação
+                </label>
+                <select
+                  value={editType}
+                  onChange={(e) => setEditType(e.target.value as any)}
+                  className="w-full text-xs p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                >
+                  <option value="custom">Relação Customizada (custom)</option>
+                  <option value="references">Referência Documental (references)</option>
+                  <option value="depends_on">Dependência Técnica (depends_on)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Justificativa / Evidência Manual
+                </label>
+                <textarea
+                  rows={2}
+                  value={editEvidence}
+                  onChange={(e) => setEditEvidence(e.target.value)}
+                  placeholder="Por que esses projetos se conectam?"
+                  className="w-full text-xs p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditModalOpen(false);
+                    setEditingRel(null);
+                  }}
+                  className="px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 text-xs font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded-lg shadow-sm"
+                >
+                  Salvar Alterações
                 </button>
               </div>
             </form>

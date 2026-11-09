@@ -3,14 +3,13 @@ import { Repository, Relationship, Organization } from './types.js';
 export function extractExplicitRelationships(
   repos: Repository[],
   orgs: Organization[],
-  readmeContentsMap: Record<number, string> = {}
+  readmeContentsMap: Record<number, string> = {},
+  manifestContentsMap: Record<number, string> = {}
 ): Relationship[] {
   const relationships: Relationship[] = [];
-  const knownRepoNames = new Map<string, Repository>();
   const knownRepoFullNames = new Map<string, Repository>();
 
   for (const repo of repos) {
-    knownRepoNames.set(repo.name.toLowerCase(), repo);
     knownRepoFullNames.set(repo.fullName.toLowerCase(), repo);
   }
 
@@ -35,22 +34,18 @@ export function extractExplicitRelationships(
     }
   }
 
-  // 2. Relações Verificadas entre Repositórios a partir de documentação (README) e manifestos
+  // 2. Relações Verificadas entre Repositórios a partir de documentação (README)
   for (const repo of repos) {
     const readme = readmeContentsMap[repo.id];
     if (!readme) continue;
 
-    // Busca referências explícitas no formato github.com/owner/repo ou [link](https://github.com/...)
-    // ou menções explícitas de URLs completas para repos conhecidos do portfólio
     for (const [targetFullName, targetRepo] of knownRepoFullNames.entries()) {
       if (targetRepo.id === repo.id) continue;
 
-      // Regex para encontrar menção direta e inequívoca da URL ou fullName
       const urlPattern = new RegExp(`github\\.com/${escapeRegex(targetFullName)}(\\b|/|#)`, 'i');
       const markdownLinkPattern = new RegExp(`\\[[^\\]]+\\]\\([^)]*${escapeRegex(targetFullName)}[^)]*\\)`, 'i');
 
       if (urlPattern.test(readme) || markdownLinkPattern.test(readme)) {
-        // Encontrou link documental inequívoco
         relationships.push({
           id: `rel_ref_${repo.id}_${targetRepo.id}`,
           source: String(repo.id),
@@ -62,9 +57,66 @@ export function extractExplicitRelationships(
           verified: true,
           evidence: `Citação explícita encontrada no README de ${repo.fullName} apontando para ${targetRepo.fullName}`,
           description: `Referenciado em documentação de ${repo.name}`,
-          createdAt: new Date().toISOString(),
+          createdAt: repo.createdAt || new Date().toISOString(),
         });
       }
+    }
+  }
+
+  // 3. Relações Verificadas entre Repositórios a partir de manifestos (ex: package.json)
+  // REGRA ESTRITA: apenas referências explícitas verificáveis (URLs github/git), sem inferir por nome do pacote
+  for (const repo of repos) {
+    const manifestStr = manifestContentsMap[repo.id];
+    if (!manifestStr) continue;
+
+    try {
+      const manifest = JSON.parse(manifestStr);
+      const depSections = [
+        manifest.dependencies,
+        manifest.devDependencies,
+        manifest.peerDependencies,
+        manifest.optionalDependencies,
+      ];
+
+      for (const deps of depSections) {
+        if (!deps || typeof deps !== 'object') continue;
+
+        for (const [depPkgName, depTarget] of Object.entries(deps)) {
+          if (typeof depTarget !== 'string') continue;
+
+          // Procura URL GitHub ou specifier git explícito apontando para repositórios conhecidos do portfólio
+          for (const [targetFullName, targetRepo] of knownRepoFullNames.entries()) {
+            if (targetRepo.id === repo.id) continue;
+
+            const targetOwnerRepoRegex = new RegExp(
+              `(github\\.com[/:#]|git\\+https?://github\\.com/|github:)${escapeRegex(targetFullName)}(\\.git)?(#|/|$)`,
+              'i'
+            );
+
+            if (targetOwnerRepoRegex.test(depTarget)) {
+              const relId = `rel_dep_${repo.id}_${targetRepo.id}`;
+              // Evita duplicar se declarado em mais de uma seção de deps
+              if (!relationships.some((r) => r.id === relId)) {
+                relationships.push({
+                  id: relId,
+                  source: String(repo.id),
+                  target: String(targetRepo.id),
+                  sourceType: 'repository',
+                  targetType: 'repository',
+                  type: 'depends_on',
+                  provenance: 'automatic',
+                  verified: true,
+                  evidence: `package.json: dependência "${depPkgName}": "${depTarget}" aponta inequivocamente para ${targetRepo.fullName}`,
+                  description: `Dependência declarada em manifesto (${depPkgName})`,
+                  createdAt: repo.createdAt || new Date().toISOString(),
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // Manifest parsing errors are handled and warned during sync
     }
   }
 

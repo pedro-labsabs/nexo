@@ -42,7 +42,9 @@ describe('Deterministic Indicators Calculation', () => {
       readmePath: 'README.md',
       contributingFound: true,
       licenseFileFound: true,
-      treeTruncated: false,
+      packageJsonFound: false,
+    isEmptyRepo: false,
+    treeTruncated: false,
       treeInspected: true,
     },
   };
@@ -73,7 +75,9 @@ describe('Deterministic Indicators Calculation', () => {
         readmeFound: false,
         contributingFound: false,
         licenseFileFound: false,
-        treeTruncated: false,
+        packageJsonFound: false,
+    isEmptyRepo: false,
+    treeTruncated: false,
         treeInspected: false,
         inspectionError: '403 Forbidden',
       },
@@ -98,3 +102,52 @@ describe('Deterministic Indicators Calculation', () => {
     expect(indicators.maintenanceSignals.score).toBe(10);
   });
 });
+
+  it('marks indicators as unknown rather than failed when tree is truncated and signals are unobserved', () => {
+    const truncatedRepo: Repository = {
+      id: 999,
+      nodeId: 'r999',
+      name: 'large-repo',
+      fullName: 'org/large-repo',
+      owner: { login: 'org', id: 1, type: 'Organization' },
+      isPrivate: false,
+      htmlUrl: 'https://github.com/org/large-repo',
+      description: 'Large repo',
+      fork: false,
+      createdAt: '2025-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+      pushedAt: '2026-01-01T00:00:00Z',
+      sizeKb: 50000,
+      stargazersCount: 10,
+      watchersCount: 1,
+      openIssuesCount: 0,
+      forksCount: 0,
+      primaryLanguage: 'TypeScript',
+      languages: {},
+      archived: false,
+      disabled: false,
+      defaultBranch: 'main',
+      affiliation: 'owner',
+      treeSignals: {
+        hasTests: false,
+        testEvidence: [],
+        hasCI: false,
+        ciEvidence: [],
+        hasDocumentation: false,
+        documentationEvidence: [],
+        readmeFound: false,
+        contributingFound: false,
+        licenseFileFound: false,
+        packageJsonFound: false,
+        isEmptyRepo: false,
+        treeTruncated: true, // Truncated tree!
+        treeInspected: true,
+      },
+    };
+
+    const indicators = computeIndicators(truncatedRepo, '2026-01-02T00:00:00Z');
+    expect(indicators.testInfrastructure.status).toBe('unknown');
+    expect(indicators.testInfrastructure.summary).toContain('Inspeção parcial');
+    expect(indicators.ciConfiguration.status).toBe('unknown');
+    expect(indicators.ciConfiguration.summary).toContain('Inspeção parcial');
+  });

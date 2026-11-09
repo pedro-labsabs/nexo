@@ -1,7 +1,16 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Snapshot, Repository, Relationship, PotentialAssessment, UserAnnotations } from './shared/types.js';
-import { validateSnapshot } from './shared/validation.js';
+import {
+  Snapshot,
+  Repository,
+  Relationship,
+  PotentialAssessment,
+  UserAnnotations,
+  RelationshipTombstone,
+} from './shared/types.js';
+import { validateSnapshot, validateAnnotations } from './shared/validation.js';
 import { generateMarkdownReport } from './shared/report.js';
+import { mergeUserAnnotations } from './shared/annotations.js';
+import { loadScopedAnnotations, saveScopedAnnotations, clearScopedAnnotations } from './shared/storage.js';
 import demoSnapshotRaw from './demo/demo-snapshot.json';
 import { Header } from './components/Header.js';
 import { OverviewMetrics } from './components/OverviewMetrics.js';
@@ -9,16 +18,44 @@ import { FiltersBar, FilterState } from './components/FiltersBar.js';
 import { RepositoryTable } from './components/RepositoryTable.js';
 import { ProjectGraph } from './components/ProjectGraph.js';
 import { RepositoryDetailDrawer } from './components/RepositoryDetailDrawer.js';
-import { AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle2, Trash2 } from 'lucide-react';
 
 export const App: React.FC = () => {
-  const [snapshot, setSnapshot] = useState<Snapshot>(demoSnapshotRaw as unknown as Snapshot);
+  const [snapshot, setSnapshot] = useState<Snapshot>(() => {
+    const initial = demoSnapshotRaw as unknown as Snapshot;
+    // Check if there are user annotations already stored for demo
+    const stored = loadScopedAnnotations(initial.metadata.authenticatedUser);
+    if (stored) {
+      const mergedAnno = mergeUserAnnotations(initial.userAnnotations || {
+        schemaVersion: '1.0',
+        exportedAt: new Date().toISOString(),
+        authenticatedUser: initial.metadata.authenticatedUser,
+        manualRelationships: [],
+        deletedRelationships: [],
+        potentialAssessments: {},
+      }, stored);
+
+      // Rebuild initial relationships including manual ones not tombstones
+      const deletedIds = new Set(mergedAnno.deletedRelationships?.map((t) => t.id) || []);
+      const activeManual = mergedAnno.manualRelationships.filter((r) => !deletedIds.has(r.id));
+      const autoRels = initial.relationships.filter((r) => r.provenance === 'automatic');
+
+      return {
+        ...initial,
+        relationships: [...autoRels, ...activeManual],
+        userAnnotations: mergedAnno,
+      };
+    }
+    return initial;
+  });
+
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null);
   const [activeTab, setActiveTab] = useState<'table' | 'graph'>('table');
   const [importNotification, setImportNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const annotationsFileInputRef = useRef<HTMLInputElement>(null);
 
   // Manage theme class on HTML root
   useEffect(() => {
@@ -29,6 +66,19 @@ export const App: React.FC = () => {
       root.classList.remove('dark');
     }
   }, [theme]);
+
+  // Save annotations to localStorage whenever userAnnotations change
+  useEffect(() => {
+    if (snapshot.userAnnotations) {
+      const saveResult = saveScopedAnnotations(snapshot.userAnnotations, snapshot.metadata.authenticatedUser);
+      if (!saveResult.success) {
+        setImportNotification({
+          type: 'error',
+          message: saveResult.error || 'Falha ao salvar anotações no navegador.',
+        });
+      }
+    }
+  }, [snapshot.userAnnotations, snapshot.metadata.authenticatedUser]);
 
   // Filter state
   const [filters, setFilters] = useState<FilterState>({
@@ -97,20 +147,83 @@ export const App: React.FC = () => {
       });
   }, [snapshot.repositories, filters]);
 
-  // Handler for adding manual relationships
+  // Handler for adding a manual relationship
   const handleAddManualRelationship = (newRel: Relationship) => {
     setSnapshot((prev) => {
       const currentManual = prev.userAnnotations?.manualRelationships || [];
       const updatedUserAnnotations: UserAnnotations = {
         schemaVersion: '1.0',
         exportedAt: new Date().toISOString(),
-        manualRelationships: [...currentManual, newRel],
+        authenticatedUser: prev.metadata.authenticatedUser,
+        manualRelationships: [...currentManual.filter((r) => r.id !== newRel.id), newRel],
+        deletedRelationships: prev.userAnnotations?.deletedRelationships || [],
         potentialAssessments: prev.userAnnotations?.potentialAssessments || {},
       };
 
+      const autoRels = prev.relationships.filter((r) => r.provenance === 'automatic');
       return {
         ...prev,
-        relationships: [...prev.relationships, newRel],
+        relationships: [...autoRels, ...updatedUserAnnotations.manualRelationships],
+        userAnnotations: updatedUserAnnotations,
+      };
+    });
+  };
+
+  // Handler for updating a manual relationship
+  const handleUpdateManualRelationship = (updatedRel: Relationship) => {
+    setSnapshot((prev) => {
+      const currentManual = prev.userAnnotations?.manualRelationships || [];
+      const updatedManual = currentManual.map((r) => (r.id === updatedRel.id ? updatedRel : r));
+
+      const updatedUserAnnotations: UserAnnotations = {
+        schemaVersion: '1.0',
+        exportedAt: new Date().toISOString(),
+        authenticatedUser: prev.metadata.authenticatedUser,
+        manualRelationships: updatedManual,
+        deletedRelationships: prev.userAnnotations?.deletedRelationships || [],
+        potentialAssessments: prev.userAnnotations?.potentialAssessments || {},
+      };
+
+      const autoRels = prev.relationships.filter((r) => r.provenance === 'automatic');
+      return {
+        ...prev,
+        relationships: [...autoRels, ...updatedManual],
+        userAnnotations: updatedUserAnnotations,
+      };
+    });
+  };
+
+  // Handler for deleting a manual relationship with a tombstone
+  const handleDeleteManualRelationship = (relId: string) => {
+    setSnapshot((prev) => {
+      const currentManual = prev.userAnnotations?.manualRelationships || [];
+      const targetRel = currentManual.find((r) => r.id === relId);
+      if (!targetRel) return prev;
+
+      const newTombstone: RelationshipTombstone = {
+        id: targetRel.id,
+        source: targetRel.source,
+        target: targetRel.target,
+        type: targetRel.type,
+        deletedAt: new Date().toISOString(),
+      };
+
+      const remainingManual = currentManual.filter((r) => r.id !== relId);
+      const updatedTombstones = [...(prev.userAnnotations?.deletedRelationships || []), newTombstone];
+
+      const updatedUserAnnotations: UserAnnotations = {
+        schemaVersion: '1.0',
+        exportedAt: new Date().toISOString(),
+        authenticatedUser: prev.metadata.authenticatedUser,
+        manualRelationships: remainingManual,
+        deletedRelationships: updatedTombstones,
+        potentialAssessments: prev.userAnnotations?.potentialAssessments || {},
+      };
+
+      const autoRels = prev.relationships.filter((r) => r.provenance === 'automatic');
+      return {
+        ...prev,
+        relationships: [...autoRels, ...remainingManual],
         userAnnotations: updatedUserAnnotations,
       };
     });
@@ -123,7 +236,9 @@ export const App: React.FC = () => {
       const updatedUserAnnotations: UserAnnotations = {
         schemaVersion: '1.0',
         exportedAt: new Date().toISOString(),
+        authenticatedUser: prev.metadata.authenticatedUser,
         manualRelationships: prev.userAnnotations?.manualRelationships || [],
+        deletedRelationships: prev.userAnnotations?.deletedRelationships || [],
         potentialAssessments: {
           ...currentAssessments,
           [String(assessment.repositoryId)]: assessment,
@@ -161,7 +276,28 @@ export const App: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  // File import handler
+  // Export JSON Annotations only (no private repo data, easy backup)
+  const handleExportAnnotations = () => {
+    const annotationsToExport: UserAnnotations = snapshot.userAnnotations || {
+      schemaVersion: '1.0',
+      exportedAt: new Date().toISOString(),
+      authenticatedUser: snapshot.metadata.authenticatedUser,
+      manualRelationships: [],
+      deletedRelationships: [],
+      potentialAssessments: {},
+    };
+
+    const json = JSON.stringify(annotationsToExport, null, 2);
+    const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `nexo-annotations-${snapshot.metadata.authenticatedUser}-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Snapshot file import handler (with deterministic annotations preservation and merging)
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -172,10 +308,37 @@ export const App: React.FC = () => {
         const parsed = JSON.parse(evt.target?.result as string);
         const validation = validateSnapshot(parsed);
         if (validation.success) {
-          setSnapshot(validation.data);
+          const incomingSnapshot = validation.data;
+          const targetUser = incomingSnapshot.metadata.authenticatedUser;
+
+          // Load any existing stored annotations for this user to avoid data loss
+          const localStored = loadScopedAnnotations(targetUser);
+          const currentAnnotations = localStored || (
+            snapshot.metadata.authenticatedUser === targetUser ? snapshot.userAnnotations : undefined
+          );
+
+          let finalAnnotations = incomingSnapshot.userAnnotations;
+          if (currentAnnotations && incomingSnapshot.userAnnotations) {
+            finalAnnotations = mergeUserAnnotations(currentAnnotations, incomingSnapshot.userAnnotations);
+          } else if (currentAnnotations) {
+            finalAnnotations = currentAnnotations;
+          }
+
+          // Combine automatic relationships from incoming snapshot with merged active manual relationships
+          const autoRels = incomingSnapshot.relationships.filter((r) => r.provenance === 'automatic');
+          const deletedIds = new Set(finalAnnotations?.deletedRelationships?.map((t) => t.id) || []);
+          const activeManual = (finalAnnotations?.manualRelationships || []).filter((r) => !deletedIds.has(r.id));
+
+          const mergedSnapshot: Snapshot = {
+            ...incomingSnapshot,
+            relationships: [...autoRels, ...activeManual],
+            userAnnotations: finalAnnotations,
+          };
+
+          setSnapshot(mergedSnapshot);
           setImportNotification({
             type: 'success',
-            message: `Snapshot importado com sucesso! (${validation.data.repositories.length} repositórios).`,
+            message: `Snapshot importado com sucesso! (${mergedSnapshot.repositories.length} repositórios, ${activeManual.length} relações manuais mescladas).`,
           });
         } else {
           setImportNotification({
@@ -194,12 +357,105 @@ export const App: React.FC = () => {
     e.target.value = '';
   };
 
+  // Annotations file import handler
+  const handleAnnotationsFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const parsed = JSON.parse(evt.target?.result as string);
+        const validation = validateAnnotations(parsed);
+        if (validation.success) {
+          const incomingAnnotations = validation.data;
+          const currentAnnotations = snapshot.userAnnotations || {
+            schemaVersion: '1.0',
+            exportedAt: new Date().toISOString(),
+            authenticatedUser: snapshot.metadata.authenticatedUser,
+            manualRelationships: [],
+            deletedRelationships: [],
+            potentialAssessments: {},
+          };
+
+          const merged = mergeUserAnnotations(currentAnnotations, incomingAnnotations);
+          const autoRels = snapshot.relationships.filter((r) => r.provenance === 'automatic');
+          const deletedIds = new Set(merged.deletedRelationships?.map((t) => t.id) || []);
+          const activeManual = merged.manualRelationships.filter((r) => !deletedIds.has(r.id));
+
+          setSnapshot((prev) => ({
+            ...prev,
+            relationships: [...autoRels, ...activeManual],
+            userAnnotations: merged,
+          }));
+
+          setImportNotification({
+            type: 'success',
+            message: `Anotações importadas e mescladas com sucesso! (${activeManual.length} relações manuais ativas).`,
+          });
+        } else {
+          setImportNotification({
+            type: 'error',
+            message: `Falha na validação do arquivo de anotações: ${validation.errors.slice(0, 3).join('; ')}`,
+          });
+        }
+      } catch (err: any) {
+        setImportNotification({
+          type: 'error',
+          message: `Arquivo de anotações inválido: ${err?.message || err}`,
+        });
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   const resetToDemo = () => {
-    setSnapshot(demoSnapshotRaw as unknown as Snapshot);
+    const demo = demoSnapshotRaw as unknown as Snapshot;
+    // Restore demo data while retaining any annotations stored specifically for demo context
+    const storedDemoAnno = loadScopedAnnotations(demo.metadata.authenticatedUser);
+    const finalDemoAnno = storedDemoAnno || demo.userAnnotations;
+
+    const autoRels = demo.relationships.filter((r) => r.provenance === 'automatic');
+    const deletedIds = new Set(finalDemoAnno?.deletedRelationships?.map((t) => t.id) || []);
+    const activeManual = (finalDemoAnno?.manualRelationships || []).filter((r) => !deletedIds.has(r.id));
+
+    setSnapshot({
+      ...demo,
+      relationships: [...autoRels, ...activeManual],
+      userAnnotations: finalDemoAnno,
+    });
+
     setImportNotification({
       type: 'success',
-      message: 'Base de dados restaurada para a demonstração sintética.',
+      message: 'Base de dados restaurada para o contexto da demonstração sintética.',
     });
+  };
+
+  // Explicit wipe of all annotations with confirmation
+  const handleClearAllAnnotations = () => {
+    if (window.confirm('Tem certeza de que deseja apagar permanentemente todas as suas anotações e avaliações deste portfólio no navegador?')) {
+      clearScopedAnnotations(snapshot.metadata.authenticatedUser);
+      setSnapshot((prev) => {
+        const autoRels = prev.relationships.filter((r) => r.provenance === 'automatic');
+        return {
+          ...prev,
+          relationships: autoRels,
+          userAnnotations: {
+            schemaVersion: '1.0',
+            exportedAt: new Date().toISOString(),
+            authenticatedUser: prev.metadata.authenticatedUser,
+            manualRelationships: [],
+            deletedRelationships: [],
+            potentialAssessments: {},
+          },
+        };
+      });
+      setImportNotification({
+        type: 'success',
+        message: 'Anotações deste portfólio foram removidas do navegador.',
+      });
+    }
   };
 
   return (
@@ -211,13 +467,23 @@ export const App: React.FC = () => {
         onResetToDemo={resetToDemo}
         onExportSnapshot={handleExportSnapshot}
         onImportClick={() => fileInputRef.current?.click()}
+        onExportAnnotations={handleExportAnnotations}
+        onImportAnnotationsClick={() => annotationsFileInputRef.current?.click()}
         onExportReport={handleExportReport}
       />
 
+      {/* Hidden file inputs for snapshot and annotations */}
       <input
         type="file"
         ref={fileInputRef}
         onChange={handleFileImport}
+        accept=".json"
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={annotationsFileInputRef}
+        onChange={handleAnnotationsFileImport}
         accept=".json"
         className="hidden"
       />
@@ -249,18 +515,40 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* Sync Warnings Banner if any */}
-        {snapshot.metadata.syncWarnings.length > 0 && (
-          <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
+        {/* Sync Status Banner */}
+        {snapshot.metadata.incompleteSync ? (
+          <div className="mb-4 p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-xl text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-            <div>
-              <span className="font-bold">Avisos da Sincronização:</span>
-              <ul className="list-disc pl-4 mt-0.5 space-y-0.5 text-[11px]">
-                {snapshot.metadata.syncWarnings.map((w, idx) => (
-                  <li key={idx}>{w}</li>
-                ))}
-              </ul>
+            <div className="flex-1">
+              <span className="font-bold block text-[13px]">
+                Status da Coleta: Sincronização Parcial / Incompleta
+              </span>
+              <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
+                Existem lacunas materiais na coleta do GitHub (permissões, árvores truncadas ou limites de API). Os dados parciais estão disponíveis, e os indicadores não confirmados são classificados como Desconhecidos.
+              </p>
+              {snapshot.metadata.syncWarnings.length > 0 && (
+                <ul className="list-disc pl-4 mt-1.5 space-y-0.5 text-[11px]">
+                  {snapshot.metadata.syncWarnings.map((w, idx) => (
+                    <li key={idx}>{w}</li>
+                  ))}
+                </ul>
+              )}
             </div>
+          </div>
+        ) : (
+          <div className="mb-3 px-3 py-1.5 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-lg text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              Sincronização completa de repositórios e relacionamentos.
+            </span>
+            <button
+              onClick={handleClearAllAnnotations}
+              className="text-[10px] text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 flex items-center gap-1 transition-colors"
+              title="Apagar anotações locais deste portfólio"
+            >
+              <Trash2 className="w-3 h-3" />
+              Limpar anotações locais
+            </button>
           </div>
         )}
 
@@ -319,6 +607,8 @@ export const App: React.FC = () => {
             relationships={snapshot.relationships}
             onSelectNode={(r) => setSelectedRepo(r)}
             onAddManualRelationship={handleAddManualRelationship}
+            onUpdateManualRelationship={handleUpdateManualRelationship}
+            onDeleteManualRelationship={handleDeleteManualRelationship}
             theme={theme}
           />
         )}

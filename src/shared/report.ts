@@ -27,7 +27,9 @@ export function generateMarkdownReport(snapshot: Snapshot): string {
   md += `- **Total de Relacionamentos Registrados:** ${rels.length}\n`;
   if (meta.incompleteSync) {
     md += `- **Status de Sincronização:** Parcial / Incompleta\n`;
-    md += `  - Avisos registrados: ${meta.syncWarnings.join('; ')}\n`;
+    if (meta.syncWarnings.length > 0) {
+      md += `  - Avisos registrados: ${meta.syncWarnings.join('; ')}\n`;
+    }
   } else {
     md += `- **Status de Sincronização:** Completa\n`;
   }
@@ -49,12 +51,27 @@ export function generateMarkdownReport(snapshot: Snapshot): string {
   md += `| Repositório | Visibilidade | Linguagem | Testes | CI | Escore Qualidade | Último Push |\n`;
   md += `| :--- | :---: | :---: | :---: | :---: | :---: | :---: |\n`;
   for (const repo of repos) {
-    const hasTests = repo.treeSignals.hasTests ? '✅ Presente' : '❌ Ausente';
-    const hasCI = repo.treeSignals.hasCI ? '✅ Presente' : '❌ Ausente';
+    const testStatus = repo.indicators?.testInfrastructure.status;
+    const ciStatus = repo.indicators?.ciConfiguration.status;
+
+    let hasTestsLabel = '❌ Ausente';
+    if (repo.treeSignals.hasTests) {
+      hasTestsLabel = '✅ Presente';
+    } else if (testStatus === 'unknown' || !repo.treeSignals.treeInspected || repo.treeSignals.treeTruncated) {
+      hasTestsLabel = '❓ Desconhecido';
+    }
+
+    let hasCILabel = '❌ Ausente';
+    if (repo.treeSignals.hasCI) {
+      hasCILabel = '✅ Presente';
+    } else if (ciStatus === 'unknown' || !repo.treeSignals.treeInspected || repo.treeSignals.treeTruncated) {
+      hasCILabel = '❓ Desconhecido';
+    }
+
     const score = repo.indicators ? `${repo.indicators.overallQualityScore}/100` : 'N/A';
     const pushDate = new Date(repo.pushedAt).toLocaleDateString('pt-BR');
     const vis = repo.isPrivate ? '🔒 Privado' : '🌐 Público';
-    md += `| **${repo.fullName}** | ${vis} | ${repo.primaryLanguage || '—'} | ${hasTests} | ${hasCI} | ${score} | ${pushDate} |\n`;
+    md += `| **${repo.fullName}** | ${vis} | ${repo.primaryLanguage || '—'} | ${hasTestsLabel} | ${hasCILabel} | ${score} | ${pushDate} |\n`;
   }
   md += `\n---\n\n`;
 

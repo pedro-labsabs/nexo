@@ -11,6 +11,7 @@ import {
 import { computeIndicators } from '../shared/indicators.js';
 import { extractExplicitRelationships } from '../shared/relations.js';
 import { validateSnapshot, validateAnnotations } from '../shared/validation.js';
+import { mergeManualRelationships } from '../shared/annotations.js';
 
 export interface SyncOptions {
   token?: string;
@@ -39,7 +40,7 @@ export async function runSync(options: SyncOptions = {}): Promise<Snapshot> {
     authenticatedUser = user.login;
     console.log(`👤 Usuário autenticado: ${authenticatedUser}`);
   } catch (err: any) {
-    throw new Error(`Falha de autenticação no GitHub: ${err?.message || err}`);
+    throw new Error(`Falha de autenticação fatal no GitHub: ${err?.message || err}`);
   }
 
   const warnings: string[] = [];
@@ -76,7 +77,7 @@ export async function runSync(options: SyncOptions = {}): Promise<Snapshot> {
         page++;
       } catch (err: any) {
         incompleteSync = true;
-        warnings.push(`Erro ao listar repositórios (${aff}, página ${page}): ${err?.message || err}`);
+        warnings.push(`Erro de paginação ao listar repositórios (${aff}, página ${page}): ${err?.message || err}`);
         break;
       }
     }
@@ -88,6 +89,7 @@ export async function runSync(options: SyncOptions = {}): Promise<Snapshot> {
   const orgsMap = new Map<number, Organization>();
   const normalizedRepos: Repository[] = [];
   const readmeMap: Record<number, string> = {};
+  const manifestMap: Record<number, string> = {};
 
   const referenceDate = new Date().toISOString();
 
@@ -113,8 +115,15 @@ export async function runSync(options: SyncOptions = {}): Promise<Snapshot> {
 
     // Inspeção de árvore de arquivos e detecção determinística de evidências
     const treeSignals = await inspectRepositoryTree(octokit, r.owner.login, r.name, r.default_branch);
+
     if (!treeSignals.treeInspected) {
-      warnings.push(`Inspeção limitada para ${r.full_name}: ${treeSignals.inspectionError || 'Árvore não acessível'}`);
+      if (!treeSignals.isEmptyRepo) {
+        incompleteSync = true;
+        warnings.push(`Inspeção de árvore inacessível em ${r.full_name}: ${treeSignals.inspectionError || 'Acesso negado ou erro de API'}`);
+      }
+    } else if (treeSignals.treeTruncated) {
+      incompleteSync = true;
+      warnings.push(`Árvore de arquivos truncada em ${r.full_name}: coleta de testes e CI parcial`);
     }
 
     // Leitura segura do README se existir para relacionamentos
@@ -127,9 +136,33 @@ export async function runSync(options: SyncOptions = {}): Promise<Snapshot> {
         });
         if (typeof readmeContent === 'string') {
           readmeMap[r.id] = readmeContent;
+        } else {
+          incompleteSync = true;
+          warnings.push(`Falha na leitura do README em ${r.full_name}: resposta em formato inesperado`);
         }
-      } catch {
-        // Ignora silenciosamente erro de leitura de readme
+      } catch (err: any) {
+        incompleteSync = true;
+        warnings.push(`Falha na leitura do README em ${r.full_name}: ${err?.message || err}`);
+      }
+    }
+
+    // Leitura segura de manifesto package.json na raiz se detectado
+    if (treeSignals.packageJsonFound) {
+      try {
+        const { data: packageJsonContent } = await octokit.rest.repos.getContent({
+          owner: r.owner.login,
+          repo: r.name,
+          path: 'package.json',
+          mediaType: { format: 'raw' },
+        });
+        if (typeof packageJsonContent === 'string') {
+          manifestMap[r.id] = packageJsonContent;
+        } else if ((packageJsonContent as any)?.content) {
+          manifestMap[r.id] = Buffer.from((packageJsonContent as any).content, 'base64').toString('utf-8');
+        }
+      } catch (err: any) {
+        incompleteSync = true;
+        warnings.push(`Falha na leitura do manifesto package.json em ${r.full_name}: ${err?.message || err}`);
       }
     }
 
@@ -170,7 +203,14 @@ export async function runSync(options: SyncOptions = {}): Promise<Snapshot> {
   }
 
   const organizations = Array.from(orgsMap.values());
-  const relationships = extractExplicitRelationships(normalizedRepos, organizations, readmeMap);
+  const automaticRelationships = extractExplicitRelationships(
+    normalizedRepos,
+    organizations,
+    readmeMap,
+    manifestMap
+  );
+
+  const finalRelationships = [...automaticRelationships];
 
   // Reaplica anotações e relações manuais locais se arquivo de anotações existir
   let userAnnotations = undefined;
@@ -180,15 +220,23 @@ export async function runSync(options: SyncOptions = {}): Promise<Snapshot> {
       const annoValid = validateAnnotations(rawAnno);
       if (annoValid.success) {
         userAnnotations = annoValid.data;
-        // Mescla relações manuais
-        for (const manualRel of userAnnotations.manualRelationships) {
-          relationships.push(manualRel);
+        // Mescla relações manuais usando algoritmo determinístico com tombstones
+        const { mergedRelationships } = mergeManualRelationships(
+          [],
+          userAnnotations.manualRelationships || [],
+          userAnnotations.deletedRelationships || [],
+          []
+        );
+        for (const manualRel of mergedRelationships) {
+          finalRelationships.push(manualRel);
         }
-        console.log(`📌 Anotações locais aplicadas com sucesso (${userAnnotations.manualRelationships.length} relações manuais).`);
+        console.log(`📌 Anotações locais aplicadas com sucesso (${mergedRelationships.length} relações manuais ativas).`);
       } else {
+        incompleteSync = true;
         warnings.push(`Falha ao validar anotações existentes: ${annoValid.errors.join('; ')}`);
       }
     } catch (err: any) {
+      incompleteSync = true;
       warnings.push(`Erro ao carregar anotações locais: ${err?.message || err}`);
     }
   }
@@ -205,7 +253,7 @@ export async function runSync(options: SyncOptions = {}): Promise<Snapshot> {
     },
     organizations,
     repositories: normalizedRepos,
-    relationships,
+    relationships: finalRelationships,
     userAnnotations,
   };
 
@@ -242,6 +290,8 @@ export async function inspectRepositoryTree(
     readmeFound: false,
     contributingFound: false,
     licenseFileFound: false,
+    packageJsonFound: false,
+    isEmptyRepo: false,
     treeTruncated: false,
     treeInspected: false,
   };
@@ -261,8 +311,18 @@ export async function inspectRepositoryTree(
       return result;
     }
 
+    if (treeData.tree.length === 0) {
+      result.isEmptyRepo = true;
+      return result;
+    }
+
     for (const item of treeData.tree) {
       const p = (item.path || '').toLowerCase();
+
+      // Manifest package.json check (na raiz)
+      if (p === 'package.json') {
+        result.packageJsonFound = true;
+      }
 
       // Test evidence patterns
       if (
@@ -318,7 +378,14 @@ export async function inspectRepositoryTree(
     return result;
   } catch (err: any) {
     result.treeInspected = false;
-    result.inspectionError = err?.message || String(err);
+    const msg = err?.message || String(err);
+    result.inspectionError = msg;
+
+    // Repositório vazio no GitHub gera 409 "Git Repository is empty" ou 404 para branch
+    if (msg.includes('Git Repository is empty') || err?.status === 409) {
+      result.isEmptyRepo = true;
+    }
+
     return result;
   }
 }

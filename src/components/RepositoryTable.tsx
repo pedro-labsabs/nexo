@@ -1,6 +1,6 @@
 import React from 'react';
 import { Repository } from '../shared/types.js';
-import { Lock, Globe, GitFork, AlertCircle } from 'lucide-react';
+import { Lock, Globe, GitFork, AlertCircle, HelpCircle } from 'lucide-react';
 
 interface RepositoryTableProps {
   repositories: Repository[];
@@ -48,6 +48,13 @@ export const RepositoryTable: React.FC<RepositoryTableProps> = ({
               const overallScore = repo.indicators?.overallQualityScore ?? 0;
               const hasTests = repo.treeSignals.hasTests;
               const hasCI = repo.treeSignals.hasCI;
+              const treeUninspectedOrTruncated = !repo.treeSignals.treeInspected || repo.treeSignals.treeTruncated;
+
+              const testStatus = repo.indicators?.testInfrastructure.status;
+              const isTestUnknown = !hasTests && (treeUninspectedOrTruncated || testStatus === 'unknown');
+
+              const ciStatus = repo.indicators?.ciConfiguration.status;
+              const isCIUnknown = !hasCI && (treeUninspectedOrTruncated || ciStatus === 'unknown');
 
               return (
                 <tr
@@ -87,26 +94,53 @@ export const RepositoryTable: React.FC<RepositoryTableProps> = ({
 
                   <td className="py-3 px-3">
                     <div className="flex items-center gap-1.5">
-                      <span
-                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                          hasTests
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                        }`}
-                        title={hasTests ? 'Arquivos de teste detectados' : 'Nenhum teste detectado'}
-                      >
-                        TEST
-                      </span>
-                      <span
-                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                          hasCI
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                        }`}
-                        title={hasCI ? 'Workflows de CI detectados' : 'Nenhum CI detectado'}
-                      >
-                        CI
-                      </span>
+                      {/* TEST Indicator Badge */}
+                      {hasTests ? (
+                        <span
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                          title="Arquivos de teste detectados"
+                        >
+                          TEST
+                        </span>
+                      ) : isTestUnknown ? (
+                        <span
+                          className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                          title="Inspeção parcial ou não inspecionado: presença de testes desconhecida"
+                        >
+                          <HelpCircle className="w-2.5 h-2.5" /> TEST?
+                        </span>
+                      ) : (
+                        <span
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                          title="Nenhum teste detectado na árvore completa"
+                        >
+                          TEST
+                        </span>
+                      )}
+
+                      {/* CI Indicator Badge */}
+                      {hasCI ? (
+                        <span
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                          title="Workflows de CI detectados"
+                        >
+                          CI
+                        </span>
+                      ) : isCIUnknown ? (
+                        <span
+                          className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                          title="Inspeção parcial ou não inspecionado: presença de CI desconhecida"
+                        >
+                          <HelpCircle className="w-2.5 h-2.5" /> CI?
+                        </span>
+                      ) : (
+                        <span
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                          title="Nenhum CI detectado na árvore completa"
+                        >
+                          CI
+                        </span>
+                      )}
                     </div>
                   </td>
 

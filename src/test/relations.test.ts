@@ -48,6 +48,8 @@ describe('Relationship Extraction Engine', () => {
         readmeFound: true,
         contributingFound: false,
         licenseFileFound: false,
+        packageJsonFound: false,
+        isEmptyRepo: false,
         treeTruncated: false,
         treeInspected: true,
       },
@@ -86,6 +88,8 @@ describe('Relationship Extraction Engine', () => {
         readmeFound: true,
         contributingFound: false,
         licenseFileFound: false,
+        packageJsonFound: false,
+        isEmptyRepo: false,
         treeTruncated: false,
         treeInspected: true,
       },
@@ -122,5 +126,38 @@ describe('Relationship Extraction Engine', () => {
     };
     const rels = extractExplicitRelationships([unrelatedRepo], [], {});
     expect(rels.length).toBe(0);
+  });
+
+  it('extracts depends_on relationships from package.json manifest for explicit GitHub URLs', () => {
+    const manifestMap = {
+      2: JSON.stringify({
+        name: '@nexo-org/extension',
+        dependencies: {
+          'nexo-core': 'git+https://github.com/nexo-org/core.git#v1.0.0',
+        },
+      }),
+    };
+
+    const rels = extractExplicitRelationships(repos, orgs, {}, manifestMap);
+    const deps = rels.filter((r) => r.type === 'depends_on');
+    expect(deps.length).toBe(1);
+    expect(deps[0].source).toBe('2');
+    expect(deps[0].target).toBe('1');
+    expect(deps[0].evidence).toContain('package.json: dependência "nexo-core"');
+  });
+
+  it('does NOT create depends_on relation if dependency name matches repo name but target is npm registry semver', () => {
+    const manifestMap = {
+      2: JSON.stringify({
+        name: '@nexo-org/extension',
+        dependencies: {
+          'core': '^1.0.0', // merely shared name on npm registry, no explicit git/github URL
+        },
+      }),
+    };
+
+    const rels = extractExplicitRelationships(repos, orgs, {}, manifestMap);
+    const deps = rels.filter((r) => r.type === 'depends_on');
+    expect(deps.length).toBe(0);
   });
 });

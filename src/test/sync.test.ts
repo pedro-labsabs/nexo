@@ -51,3 +51,43 @@ describe('CLI Sync Tree Inspection & Error Handling', () => {
     expect(signals.hasDocumentation).toBe(true);
   });
 });
+
+  it('detects empty repository correctly and flags incomplete sync on truncated tree', async () => {
+    const mockEmptyOctokit = {
+      rest: {
+        git: {
+          getTree: async () => {
+            const err: any = new Error('Git Repository is empty');
+            err.status = 409;
+            throw err;
+          },
+        },
+      },
+    } as any;
+
+    const signals = await inspectRepositoryTree(mockEmptyOctokit, 'owner', 'empty-repo');
+    expect(signals.treeInspected).toBe(false);
+    expect(signals.isEmptyRepo).toBe(true);
+  });
+
+  it('detects package.json manifest and marks tree truncated', async () => {
+    const mockTruncatedOctokit = {
+      rest: {
+        git: {
+          getTree: async () => ({
+            data: {
+              truncated: true,
+              tree: [
+                { path: 'package.json', type: 'blob' },
+              ],
+            },
+          }),
+        },
+      },
+    } as any;
+
+    const signals = await inspectRepositoryTree(mockTruncatedOctokit, 'owner', 'truncated-repo');
+    expect(signals.treeInspected).toBe(true);
+    expect(signals.treeTruncated).toBe(true);
+    expect(signals.packageJsonFound).toBe(true);
+  });

@@ -48,6 +48,7 @@ export function computeIndicators(
     totalWeight += 0.15;
   }
 
+  // Se nenhum indicador pôde ser avaliado com certeza (peso == 0), escore é 0 com status unknown
   const overallQualityScore = totalWeight > 0 ? Math.round(totalScore / totalWeight) : 0;
 
   return {
@@ -78,6 +79,29 @@ function computeTestInfrastructure(tree: TreeSignals): IndicatorDetail {
   }
 
   const count = tree.testEvidence.length;
+
+  // Se a árvore foi truncada e nenhum teste foi detectado nos arquivos parciais:
+  // a ausência NÃO é comprovada, portanto deve produzir status 'unknown'.
+  if (tree.treeTruncated && !tree.hasTests) {
+    return {
+      id: 'test_infrastructure',
+      name: 'Infraestrutura de Testes',
+      status: 'unknown',
+      score: 0,
+      summary: 'Inspeção parcial: a árvore de arquivos foi truncada pelo GitHub e arquivos de teste podem ter sido omitidos.',
+      inputs: {
+        hasTests: false,
+        treeTruncated: true,
+        evidenceFound: [],
+      },
+      calculation: 'Informação inconclusiva/desconhecida devido a truncamento de árvore.',
+      limitations: [
+        'A árvore de arquivos ultrapassou o limite do GitHub e foi truncada.',
+        'A ausência de testes não é comprovada; arquivos em diretórios profundos podem existir.',
+      ],
+    };
+  }
+
   let status: 'passed' | 'failed' | 'partial' = 'failed';
   let score = 0;
   let summary = 'Nenhuma configuração ou diretório de testes detectado na árvore inspecionada.';
@@ -92,6 +116,13 @@ function computeTestInfrastructure(tree: TreeSignals): IndicatorDetail {
     summary = `Detectado sinal de teste: ${tree.testEvidence[0]}.`;
   }
 
+  const limitations = [
+    'A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.',
+  ];
+  if (tree.treeTruncated) {
+    limitations.push('Árvore de arquivos truncada: evidência observada parcialmente.');
+  }
+
   return {
     id: 'test_infrastructure',
     name: 'Infraestrutura de Testes',
@@ -104,10 +135,7 @@ function computeTestInfrastructure(tree: TreeSignals): IndicatorDetail {
       treeTruncated: tree.treeTruncated,
     },
     calculation: 'Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.',
-    limitations: [
-      'A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.',
-      'Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas.',
-    ],
+    limitations,
   };
 }
 
@@ -125,6 +153,27 @@ function computeCIConfiguration(tree: TreeSignals): IndicatorDetail {
     };
   }
 
+  // Se a árvore foi truncada e nenhum CI foi detectado:
+  // a ausência de CI NÃO é comprovada.
+  if (tree.treeTruncated && !tree.hasCI) {
+    return {
+      id: 'ci_configuration',
+      name: 'Configuração de CI/CD',
+      status: 'unknown',
+      score: 0,
+      summary: 'Inspeção parcial: árvore truncada e diretórios de CI podem ter sido omitidos da resposta.',
+      inputs: {
+        hasCI: false,
+        treeTruncated: true,
+      },
+      calculation: 'Informação inconclusiva devido ao truncamento da árvore.',
+      limitations: [
+        'A ausência de fluxos não é comprovada em árvores truncadas pelo GitHub.',
+        'Sistemas externos de CI também podem não ter sido verificados.',
+      ],
+    };
+  }
+
   let status: 'passed' | 'failed' | 'partial' = 'failed';
   let score = 0;
   let summary = 'Nenhum arquivo de automação CI/CD (.github/workflows, etc.) encontrado.';
@@ -133,6 +182,14 @@ function computeCIConfiguration(tree: TreeSignals): IndicatorDetail {
     status = 'passed';
     score = 100;
     summary = `Fluxos de automação CI configurados: ${tree.ciEvidence.join(', ')}.`;
+  }
+
+  const limitations = [
+    'A existência de workflows não assegura que as execuções de CI estejam com status verde no GitHub.',
+    'Sistemas externos de CI (ex: CircleCI externo ou Jenkins sem manifesto no repo) podem não ser identificados.',
+  ];
+  if (tree.treeTruncated) {
+    limitations.push('Árvore de arquivos truncada: evidência observada nos arquivos parciais.');
   }
 
   return {
@@ -144,12 +201,10 @@ function computeCIConfiguration(tree: TreeSignals): IndicatorDetail {
     inputs: {
       hasCI: tree.hasCI,
       ciEvidence: tree.ciEvidence,
+      treeTruncated: tree.treeTruncated,
     },
     calculation: 'Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.',
-    limitations: [
-      'A existência de workflows não assegura que as execuções de CI estejam com status verde no GitHub.',
-      'Sistemas externos de CI (ex: CircleCI externo ou Jenkins sem manifesto no repo) podem não ser identificados.',
-    ],
+    limitations,
   };
 }
 
@@ -161,6 +216,7 @@ function computeDocumentation(tree: TreeSignals, repo: Repository): IndicatorDet
     contributingFound: tree.contributingFound,
     licenseFileFound: tree.licenseFileFound,
     docEvidence: tree.documentationEvidence,
+    treeTruncated: tree.treeTruncated,
   };
 
   if (!tree.treeInspected) {
@@ -186,9 +242,21 @@ function computeDocumentation(tree: TreeSignals, repo: Repository): IndicatorDet
   if (tree.licenseFileFound) points += 10;
 
   const score = Math.min(100, points);
-  let status: 'passed' | 'partial' | 'failed' = 'failed';
+
+  // Se a árvore foi truncada e o escore for baixo (< 40) porque arquivos de documentação
+  // podem ter sido omitidos na truncagem (por exemplo, subdiretórios de documentação):
+  let status: 'passed' | 'partial' | 'failed' | 'unknown' = 'failed';
   if (score >= 70) status = 'passed';
   else if (score >= 40) status = 'partial';
+  else if (tree.treeTruncated) status = 'unknown';
+
+  const limitations = [
+    'A presença de README.md não garante completude, clareza ou qualidade da documentação técnica.',
+    'Não avalia compreensão semântica do conteúdo textual.',
+  ];
+  if (tree.treeTruncated) {
+    limitations.push('Árvore de arquivos truncada: documentação em subpastas pode ter sido omitida.');
+  }
 
   return {
     id: 'documentation',
@@ -198,10 +266,7 @@ function computeDocumentation(tree: TreeSignals, repo: Repository): IndicatorDet
     summary: `Escore de documentação: ${score}/100 (README: ${tree.readmeFound ? 'Sim' : 'Não'}, Descrição: ${hasDesc ? 'Sim' : 'Não'}).`,
     inputs,
     calculation: 'README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).',
-    limitations: [
-      'A presença de README.md não garante completude, clareza ou qualidade da documentação técnica.',
-      'Não avalia compreensão semântica do conteúdo textual.',
-    ],
+    limitations,
   };
 }
 

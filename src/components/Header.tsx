@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sun, Moon, GitBranch, RefreshCw, Download, Upload, FileText } from 'lucide-react';
+import { Sun, Moon, GitBranch, RefreshCw, Download, Upload, FileText, BookmarkPlus, BookmarkCheck } from 'lucide-react';
 import { SnapshotMetadata } from '../shared/types.js';
 
 interface HeaderProps {
@@ -9,6 +9,8 @@ interface HeaderProps {
   onResetToDemo: () => void;
   onExportSnapshot: () => void;
   onImportClick: () => void;
+  onExportAnnotations: () => void;
+  onImportAnnotationsClick: () => void;
   onExportReport: () => void;
 }
 
@@ -19,6 +21,8 @@ export const Header: React.FC<HeaderProps> = ({
   onResetToDemo,
   onExportSnapshot,
   onImportClick,
+  onExportAnnotations,
+  onImportAnnotationsClick,
   onExportReport,
 }) => {
   return (
@@ -45,25 +49,44 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onResetToDemo}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors"
-            title="Recarregar base de demonstração sintética"
+            title="Recarregar base de demonstração sintética (preserva anotações reais no navegador)"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Demonstração
           </button>
 
+          {/* Explicit Export and Import Annotations */}
+          <button
+            onClick={onImportAnnotationsClick}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 hover:bg-purple-100 dark:hover:bg-purple-900/60 border border-purple-200 dark:border-purple-800 rounded-md transition-colors"
+            title="Importar e mesclar arquivo JSON exclusivo de anotações e relações manuais"
+          >
+            <BookmarkPlus className="w-3.5 h-3.5" />
+            Importar Anotações
+          </button>
+
+          <button
+            onClick={onExportAnnotations}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 hover:bg-purple-100 dark:hover:bg-purple-900/60 border border-purple-200 dark:border-purple-800 rounded-md transition-colors"
+            title="Exportar arquivo JSON contendo apenas anotações e relações manuais (backup seguro sem metadados privados)"
+          >
+            <BookmarkCheck className="w-3.5 h-3.5" />
+            Exportar Anotações
+          </button>
+
           <button
             onClick={onImportClick}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors"
-            title="Importar arquivo de snapshot JSON local"
+            title="Importar arquivo de snapshot JSON completo do GitHub"
           >
             <Upload className="w-3.5 h-3.5" />
-            Importar
+            Importar Snapshot
           </button>
 
           <button
             onClick={onExportSnapshot}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition-colors"
-            title="Exportar snapshot JSON com anotações atuais"
+            title="Exportar snapshot JSON completo com anotações atuais"
           >
             <Download className="w-3.5 h-3.5" />
             Exportar JSON

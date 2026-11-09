@@ -27,3 +27,8 @@ snapshots/
 *.sln
 *.sw?
 *.tsbuildinfo
+
+# Annotations (protect user annotations from accidental commit)
+annotations/
+*annotations*.json
+*.annotations.json

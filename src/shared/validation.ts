@@ -11,7 +11,17 @@ export function validateSnapshot(data: unknown): { success: true; data: Snapshot
 }
 
 export function validateAnnotations(data: unknown): { success: true; data: UserAnnotations } | { success: false; errors: string[] } {
-  const result = UserAnnotationsSchema.safeParse(data);
+  // Normalize missing deletedRelationships or default collections if validating raw JSON from previous versions
+  const normalized = typeof data === 'object' && data !== null
+    ? {
+        manualRelationships: [],
+        deletedRelationships: [],
+        potentialAssessments: {},
+        ...data,
+      }
+    : data;
+
+  const result = UserAnnotationsSchema.safeParse(normalized);
   if (result.success) {
     return { success: true, data: result.data };
   }

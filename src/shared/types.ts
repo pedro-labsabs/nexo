@@ -16,6 +16,8 @@ export const TreeSignalsSchema = z.object({
   readmePath: z.string().optional(),
   contributingFound: z.boolean(),
   licenseFileFound: z.boolean(),
+  packageJsonFound: z.boolean().default(false),
+  isEmptyRepo: z.boolean().default(false),
   treeTruncated: z.boolean(),
   treeInspected: z.boolean(),
   inspectionError: z.string().optional(),
@@ -121,8 +123,19 @@ export const RelationshipSchema = z.object({
   evidence: z.string().optional(), // Detalhes ou trecho que prova o relacionamento
   description: z.string().optional(),
   createdAt: z.string(),
+  updatedAt: z.string().optional(), // Para edições e resolução determinística de conflitos
 });
 export type Relationship = z.infer<typeof RelationshipSchema>;
+
+// Tombstone for deleted manual relationships to prevent resurrection across imports
+export const RelationshipTombstoneSchema = z.object({
+  id: z.string(),
+  source: z.string(),
+  target: z.string(),
+  type: RelationTypeSchema,
+  deletedAt: z.string(),
+});
+export type RelationshipTombstone = z.infer<typeof RelationshipTombstoneSchema>;
 
 // Optional User-maintained Potential Assessment
 export const PotentialAssessmentSchema = z.object({
@@ -140,7 +153,9 @@ export type PotentialAssessment = z.infer<typeof PotentialAssessmentSchema>;
 export const UserAnnotationsSchema = z.object({
   schemaVersion: z.literal('1.0'),
   exportedAt: z.string(),
+  authenticatedUser: z.string().optional(), // Context isolation (e.g. "alexdev", "demo")
   manualRelationships: z.array(RelationshipSchema).default([]),
+  deletedRelationships: z.array(RelationshipTombstoneSchema).default([]),
   potentialAssessments: z.record(z.string(), PotentialAssessmentSchema).default({}), // key is repo id as string
 });
 export type UserAnnotations = z.infer<typeof UserAnnotationsSchema>;

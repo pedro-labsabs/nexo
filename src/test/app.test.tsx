@@ -43,4 +43,16 @@ describe('Dashboard Component Interactions', () => {
     expect(screen.getByText('Indicadores Técnicos Explicáveis')).toBeInTheDocument();
     expect(screen.getByText(/Avaliação de Potencial Mantida pelo Usuário/i)).toBeInTheDocument();
   });
+
+  it('renders unknown indicator pills for uninspected or truncated repos', () => {
+    render(<App />);
+
+    const matchingRepos = screen.getAllByText(/pesquisa-inacessivel/i);
+    expect(matchingRepos.length).toBeGreaterThan(0);
+
+    const testUnknowns = screen.getAllByText(/TEST\?/i);
+    expect(testUnknowns.length).toBeGreaterThan(0);
+    const ciUnknowns = screen.getAllByText(/CI\?/i);
+    expect(ciUnknowns.length).toBeGreaterThan(0);
+  });
 });
