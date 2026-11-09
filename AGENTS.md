@@ -29,4 +29,4 @@ No relatório final de cada issue: apontar SHA/branch/PR, lista de requisitos cu
 
 ## Planejamento
 
-O roadmap usa **marcos lógicos M1–M4** e issues amplas; enquanto não existirem milestones nativos configurados no GitHub, os marcos no documento são a fonte de planejamento. Não interpretar a ausência de um milestone nativo como dispensa de critérios. A PR de planejamento/documentação não autoriza merge de código ou conclusão de implementação.
+O roadmap utiliza [milestones **nativos** M1–M4](ROADMAP.md) e issues amplas, com associação verificada das issues #2–#9 no GitHub. A existência de um milestone não dispensa nenhum critério de aceite. A PR de documentação não é evidência de execução da migração nem autoriza merge de código incompleto.
