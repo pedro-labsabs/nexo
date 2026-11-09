@@ -15,16 +15,16 @@ O NEXO **não é um produto de produção**: refatorações amplas, experimentos
 
 **Dono do aceite:** mantenedor. **Dono da implementação:** agente executor designado. Uma PR não é evidência de conclusão por si só. Ver [AGENTS.md](AGENTS.md).
 
-## Milestones (marcos lógicos de planejamento)
+## Milestones nativos do GitHub
 
-> **Situação do GitHub:** estes são **marcos documentados**, não objetos nativos de *GitHub Milestones*. A conexão atual não oferece criação de milestones nativos. Os códigos M1–M4 vinculam as issues ao roadmap; associar nativamente quando houver ferramenta/permissão compatível. Não confundir esta tabela com milestones já cadastrados no GitHub.
+> **Situação verificada (09/11/2026):** M1–M4 foram **criados como milestones nativos no GitHub** pelo GitHub CLI autenticado no computador autorizado, e as issues #2–#9 foram vinculadas aos marcos correspondentes. Sem datas-limite arbitrárias.
 
 | Marco | Entrega consolidada | Issues abrangidas | Critério de encerramento |
 | --- | --- | --- | --- |
-| **M1 — Fundação Rune e domínio equivalente** | Infraestrutura nativa reproduzível e núcleo Rust capaz de validar/modelar/calcular os dados do NEXO | [#2](https://github.com/pedro-labsabs/nexo/issues/2), [#3](https://github.com/pedro-labsabs/nexo/issues/3) | Compilação/smoke Linux + equivalência dos contratos e indicadores com testes |
-| **M2 — Experiência offline integral** | Persistência e anotações robustas, dashboard completo, grafo Rune com CRUD de relações manuais | [#4](https://github.com/pedro-labsabs/nexo/issues/4), [#5](https://github.com/pedro-labsabs/nexo/issues/5), [#6](https://github.com/pedro-labsabs/nexo/issues/6) | Exploração offline de ponta a ponta, edição persistida, importação/exportação e grafo interativo |
-| **M3 — Autonomia Rust e corte definitivo** | Sincronização Github somente-leitura em Rust, integração total, remoção da stack web legada e validação | [#7](https://github.com/pedro-labsabs/nexo/issues/7), [#8](https://github.com/pedro-labsabs/nexo/issues/8) | Aplicação Linux autônoma, testes/CI/regressões e documentação completos |
-| **M4 — Web e portabilidade (opcional)** | Experimento WASM/WebGPU e matriz de suporte, com decisão fundamentada | [#9](https://github.com/pedro-labsabs/nexo/issues/9) | Experimento reproduzível e relatório final; **não bloqueia M3** |
+| **[M1 — Fundação Rune e domínio equivalente](https://github.com/pedro-labsabs/nexo/milestone/1)** | Infraestrutura nativa reproduzível e núcleo Rust capaz de validar/modelar/calcular os dados do NEXO | [#2](https://github.com/pedro-labsabs/nexo/issues/2), [#3](https://github.com/pedro-labsabs/nexo/issues/3) | Compilação/smoke Linux + equivalência dos contratos e indicadores com testes |
+| **[M2 — Experiência offline integral](https://github.com/pedro-labsabs/nexo/milestone/2)** | Persistência e anotações robustas, dashboard completo, grafo Rune com CRUD de relações manuais | [#4](https://github.com/pedro-labsabs/nexo/issues/4), [#5](https://github.com/pedro-labsabs/nexo/issues/5), [#6](https://github.com/pedro-labsabs/nexo/issues/6) | Exploração offline de ponta a ponta, edição persistida, importação/exportação e grafo interativo |
+| **[M3 — Autonomia Rust e corte definitivo](https://github.com/pedro-labsabs/nexo/milestone/3)** | Sincronização Github somente-leitura em Rust, integração total, remoção da stack web legada e validação | [#7](https://github.com/pedro-labsabs/nexo/issues/7), [#8](https://github.com/pedro-labsabs/nexo/issues/8) | Aplicação Linux autônoma, testes/CI/regressões e documentação completos |
+| **[M4 — Web e portabilidade (opcional)](https://github.com/pedro-labsabs/nexo/milestone/4)** | Experimento WASM/WebGPU e matriz de suporte, com decisão fundamentada | [#9](https://github.com/pedro-labsabs/nexo/issues/9) | Experimento reproduzível e relatório final; **não bloqueia M3** |
 
 Sem datas artificiais: progredir conforme evidência técnica, conclusão integral e maturidade do Rune.
 
@@ -73,4 +73,4 @@ Sem datas artificiais: progredir conforme evidência técnica, conclusão integr
 
 - **09/11/2026:** ADR 0001 e PR #1 abertas; roadmap e política NEXO-only definidos; issues **#2 a #9** criadas como pacotes integrais.
 - **Estado de implementação:** nenhum trabalho de código Rust/Rune foi comprovado neste planejamento; todas as issues de implementação exigem execução e aceite futuros.
-- **Milestones nativos GitHub:** **não criados** pela conexão atual; M1–M4 são exclusivamente marcos lógicos no documento e nos títulos/corpos das issues.
+- **Milestones nativos GitHub:** M1–M4 criados e abertos; issues associadas: M1 (#2–#3), M2 (#4–#6), M3 (#7–#8) e M4 (#9). Nenhuma issue de implementação concluída.
