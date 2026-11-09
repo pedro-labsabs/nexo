@@ -118,3 +118,14 @@ A decisão é revisável caso o Rune imponha um bloqueio concreto demonstrado po
 ---
 
 **Resumo executivo:** substituir a arquitetura atual do NEXO por Rust + Rune, mantendo **temporariamente** o sincronizador Node/TypeScript como alimentador de snapshots JSON; migrar domínio, grafo e sincronização para Rust; remover dependências antigas quando não forem mais necessárias. Aceita-se experimentação intensa e reconstrução integral, preservando privacidade, identidade de dados e comportamento observável.
+
+
+## 10. Política especial de issues integrais (exclusiva do NEXO)
+
+A organização operacional desta ADR está detalhada em [ROADMAP.md](../../ROADMAP.md) e [AGENTS.md](../../AGENTS.md). Esta regra foi aprovada **apenas para o NEXO** e não constitui instrução para outros repositórios.
+
+- Planejar **poucas issues amplas**, cada uma reunindo uma série coesa de funcionalidades, integrações e validações.
+- Ao designar uma issue ao agente executor, exigir **cumprimento integral de todos os requisitos e critérios de aceite**. Dividir a implementação em etapas internas é aceitável; entregar somente um MVP, um slice mínimo ou um happy path **não satisfaz a issue**.
+- O mantenedor atua como seletor, revisor e auditor, mas **não reduz o escopo** após falha parcial do agente. A remediação corrige a entrega completa e a issue permanece aberta até a aceitação integral.
+- Bloqueios verificados no Rune devem ser documentados com evidência e decisão de arquitetura, jamais escondidos como funcionalidade concluída.
+- Os marcos M1–M4 do roadmap são **marcos lógicos documentados**, não milestones nativos do GitHub enquanto estes não forem realmente criados.
