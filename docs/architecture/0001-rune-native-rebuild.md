@@ -128,4 +128,4 @@ A organização operacional desta ADR está detalhada em [ROADMAP.md](../../ROAD
 - Ao designar uma issue ao agente executor, exigir **cumprimento integral de todos os requisitos e critérios de aceite**. Dividir a implementação em etapas internas é aceitável; entregar somente um MVP, um slice mínimo ou um happy path **não satisfaz a issue**.
 - O mantenedor atua como seletor, revisor e auditor, mas **não reduz o escopo** após falha parcial do agente. A remediação corrige a entrega completa e a issue permanece aberta até a aceitação integral.
 - Bloqueios verificados no Rune devem ser documentados com evidência e decisão de arquitetura, jamais escondidos como funcionalidade concluída.
-- Os marcos M1–M4 do roadmap são **marcos lógicos documentados**, não milestones nativos do GitHub enquanto estes não forem realmente criados.
+- Os marcos M1–M4 do roadmap foram **criados como milestones nativos do GitHub em 09/11/2026**, com issues #2–#9 associadas; seus critérios continuam definidos em [ROADMAP.md](../../ROADMAP.md).
