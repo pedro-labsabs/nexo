@@ -4,6 +4,8 @@ NEXO é uma aplicação local-first desenvolvida em Node.js 22, TypeScript estri
 
 ---
 
+> **Direção futura — reconstrução em Rune/Rust (decisão de 09/11/2026).** Este README descreve a implementação TypeScript/React **atual**. Foi aprovada a reconstrução integral do NEXO como app Linux nativo usando [Rune da Anomaly](https://github.com/anomalyco/rune) e Rust, com o sincronizador Node temporariamente mantido. Leia o [plano e decisão arquitetural](docs/architecture/0001-rune-native-rebuild.md). **A migração ainda não foi implementada.**
+
 ## 🌟 Recursos Principais
 
 1. **Sincronização Segura via CLI**:
