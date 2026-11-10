@@ -1,10 +1,11 @@
 //! Ponto de entrada do aplicativo nativo NEXO desktop.
 
-use nexo_desktop::app::{AppState, view};
+use nexo_desktop::app::{AppState, handle_key, view};
 use rune::AppSpec;
 
 fn main() {
     rune::run(AppSpec::<AppState> {
+        on_key: Some(handle_key),
         scenes: &[
             ("default", |_| {}),
             ("dark", |s| s.domain.dark_theme = true),
