@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/nexo-desktop",
+    "crates/nexo-domain",
+    "crates/nexo-storage",
+    "crates/nexo-github",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+authors = ["NEXO Contributors"]
+
+[workspace.dependencies]
+rune = { git = "https://github.com/anomalyco/rune", rev = "42f2d3543f5e076a67736f0cb7dcb2182e8eb4b9" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+chrono = { version = "0.4", features = ["serde"] }
+
+nexo-domain = { path = "crates/nexo-domain" }
+nexo-storage = { path = "crates/nexo-storage" }
+nexo-github = { path = "crates/nexo-github" }

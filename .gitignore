@@ -32,3 +32,6 @@ snapshots/
 annotations/
 *annotations*.json
 *.annotations.json
+
+# Rust build artifacts
+target/
