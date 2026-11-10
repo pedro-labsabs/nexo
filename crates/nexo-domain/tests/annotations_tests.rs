@@ -1,7 +1,7 @@
 use nexo_domain::annotations::{
+    CommercialPotential, PotentialAssessment, StrategicValue, UserAnnotations,
     get_relationship_logical_key, get_timestamp, is_valid_date, merge_manual_relationships,
-    merge_potential_assessments, merge_user_annotations, CommercialPotential, PotentialAssessment,
-    StrategicValue, UserAnnotations,
+    merge_potential_assessments, merge_user_annotations,
 };
 use nexo_domain::model::Snapshot;
 use nexo_domain::relations::{
@@ -16,7 +16,10 @@ fn test_logical_key_generation_and_directed_distinction() {
 
     let key2 = get_relationship_logical_key("1002", "1001", &RelationType::Custom);
     assert_eq!(key2, "1002::1001::custom");
-    assert_ne!(key1, key2, "Directed logical key must distinguish source and target");
+    assert_ne!(
+        key1, key2,
+        "Directed logical key must distinguish source and target"
+    );
 
     // All RelationType variants
     assert_eq!(
@@ -87,7 +90,10 @@ fn test_lww_potential_assessment_incoming_strictly_newer_wins() {
     let merged = merge_potential_assessments(&local, &incoming);
     let item = merged.get("1001").expect("item 1001 must exist");
     assert_eq!(item.strategic_value, StrategicValue::Critical);
-    assert_eq!(item.commercial_potential, CommercialPotential::ProductionReady);
+    assert_eq!(
+        item.commercial_potential,
+        CommercialPotential::ProductionReady
+    );
     assert_eq!(item.tags, vec!["incoming".to_string()]);
 }
 
@@ -180,7 +186,10 @@ fn test_lww_potential_assessment_invalid_timestamps() {
 
     // Incoming with valid date wins against invalid local (0 timestamp)
     let merged = merge_potential_assessments(&local, &incoming);
-    assert_eq!(merged.get("1001").unwrap().strategic_value, StrategicValue::Critical);
+    assert_eq!(
+        merged.get("1001").unwrap().strategic_value,
+        StrategicValue::Critical
+    );
 
     // If both invalid, both evaluate to 0 -> tie -> local wins
     let mut incoming_invalid = BTreeMap::new();
@@ -197,7 +206,10 @@ fn test_lww_potential_assessment_invalid_timestamps() {
         },
     );
     let merged_both_invalid = merge_potential_assessments(&local, &incoming_invalid);
-    assert_eq!(merged_both_invalid.get("1001").unwrap().strategic_value, StrategicValue::High);
+    assert_eq!(
+        merged_both_invalid.get("1001").unwrap().strategic_value,
+        StrategicValue::High
+    );
 }
 
 #[test]
@@ -241,6 +253,41 @@ fn test_merge_manual_relationships_prevents_duplicate_logical_keys() {
 }
 
 #[test]
+fn test_relationship_mod_time_falls_back_when_updated_at_empty() {
+    // If updated_at is Some(""), mod_time must fall back to created_at
+    let tombstone = RelationshipTombstone {
+        id: "rel_1".to_string(),
+        source: "1".to_string(),
+        target: "2".to_string(),
+        type_: RelationType::Custom,
+        deleted_at: "2026-01-02T00:00:00Z".to_string(),
+    };
+
+    let rel_empty_updated = Relationship {
+        id: "rel_1".to_string(),
+        source: "1".to_string(),
+        target: "2".to_string(),
+        source_type: NodeType::Repository,
+        target_type: NodeType::Repository,
+        type_: RelationType::Custom,
+        provenance: RelationshipProvenance::Manual,
+        verified: false,
+        evidence: None,
+        description: None,
+        created_at: "2026-01-01T00:00:00Z".to_string(),
+        updated_at: Some("".to_string()),
+    };
+
+    // Since created_at < deleted_at, and updated_at is empty, it should be treated as deleted
+    let (merged_rels, _) = merge_manual_relationships(&[rel_empty_updated], &[], &[tombstone], &[]);
+    assert_eq!(
+        merged_rels.len(),
+        0,
+        "Empty updated_at must fall back to created_at and respect tombstone"
+    );
+}
+
+#[test]
 fn test_tombstones_prevent_resurrection_of_deleted_relationships() {
     let rel1 = Relationship {
         id: "rel_1".to_string(),
@@ -269,7 +316,11 @@ fn test_tombstones_prevent_resurrection_of_deleted_relationships() {
     let (merged_rels, merged_tombstones) =
         merge_manual_relationships(&[], &[rel1], &[tombstone], &[]);
 
-    assert_eq!(merged_rels.len(), 0, "Deleted relationship must not be resurrected");
+    assert_eq!(
+        merged_rels.len(),
+        0,
+        "Deleted relationship must not be resurrected"
+    );
     assert_eq!(merged_tombstones.len(), 1);
 }
 
@@ -298,8 +349,7 @@ fn test_recreation_strictly_after_tombstone_allowed() {
         updated_at: Some("2026-01-03T00:00:00Z".to_string()),
     };
 
-    let (merged_rels, _) =
-        merge_manual_relationships(&[re_created_rel], &[], &[tombstone], &[]);
+    let (merged_rels, _) = merge_manual_relationships(&[re_created_rel], &[], &[tombstone], &[]);
 
     assert_eq!(merged_rels.len(), 1);
     assert_eq!(
@@ -329,7 +379,7 @@ fn test_tombstones_lww_merging() {
     let (_, merged_tombstones) = merge_manual_relationships(
         &[],
         &[],
-        &[local_tombstone.clone()],
+        std::slice::from_ref(&local_tombstone),
         &[incoming_newer_tombstone],
     );
 
@@ -344,12 +394,8 @@ fn test_tombstones_lww_merging() {
         type_: RelationType::Custom,
         deleted_at: "2026-01-02T00:00:00Z".to_string(),
     };
-    let (_, merged_tombstones_tie) = merge_manual_relationships(
-        &[],
-        &[],
-        &[local_tombstone],
-        &[incoming_tie_tombstone],
-    );
+    let (_, merged_tombstones_tie) =
+        merge_manual_relationships(&[], &[], &[local_tombstone], &[incoming_tie_tombstone]);
     assert_eq!(merged_tombstones_tie.len(), 1);
     assert_eq!(merged_tombstones_tie[0].id, "rel_1");
 }
@@ -445,7 +491,11 @@ fn test_full_user_annotations_merge_deterministic() {
     assert_eq!(merged.exported_at, "2026-01-10T00:00:00Z");
     assert_eq!(merged.authenticated_user.as_deref(), Some("alexdev"));
     assert_eq!(
-        merged.potential_assessments.get("1").unwrap().strategic_value,
+        merged
+            .potential_assessments
+            .get("1")
+            .unwrap()
+            .strategic_value,
         StrategicValue::Critical
     );
 
@@ -518,7 +568,10 @@ fn test_demo_snapshot_user_annotations_deserialization_and_validation() {
         .expect("assessment for 1001 must exist");
     assert_eq!(p1001.repository_id, 1001);
     assert_eq!(p1001.strategic_value, StrategicValue::Critical);
-    assert_eq!(p1001.commercial_potential, CommercialPotential::ProductionReady);
+    assert_eq!(
+        p1001.commercial_potential,
+        CommercialPotential::ProductionReady
+    );
     assert_eq!(
         p1001.target_audience.as_deref(),
         Some("Equipes de engenharia de software e observabilidade de código")
@@ -527,10 +580,7 @@ fn test_demo_snapshot_user_annotations_deserialization_and_validation() {
         p1001.notes.as_deref(),
         Some("Núcleo central para visibilidade técnica de repositórios.")
     );
-    assert_eq!(
-        p1001.tags,
-        vec!["observabilidade", "local-first", "grafos"]
-    );
+    assert_eq!(p1001.tags, vec!["observabilidade", "local-first", "grafos"]);
     assert_eq!(p1001.updated_at, "2026-10-29T11:00:00Z");
 
     let p1002 = annotations

@@ -103,8 +103,6 @@ pub fn merge_potential_assessments(
             // Caso contrário, local vence (empates e datas inválidas permanecem local).
             if incoming_time > local_time {
                 merged.insert(key.clone(), incoming_val.clone());
-            } else {
-                merged.insert(key.clone(), local_val.clone());
             }
         } else {
             merged.insert(key.clone(), incoming_val.clone());
@@ -154,7 +152,11 @@ pub fn merge_manual_relationships(
 
     // Determina tempo da última modificação do relacionamento
     let get_mod_time = |r: &Relationship| -> i64 {
-        let date_str = r.updated_at.as_deref().unwrap_or(&r.created_at);
+        let date_str = r
+            .updated_at
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .unwrap_or(&r.created_at);
         get_timestamp(date_str)
     };
 
@@ -229,8 +231,10 @@ pub fn merge_user_annotations(
     incoming: &UserAnnotations,
     exported_at_now: Option<&str>,
 ) -> UserAnnotations {
-    let merged_assessments =
-        merge_potential_assessments(&local.potential_assessments, &incoming.potential_assessments);
+    let merged_assessments = merge_potential_assessments(
+        &local.potential_assessments,
+        &incoming.potential_assessments,
+    );
 
     let (merged_relationships, merged_tombstones) = merge_manual_relationships(
         &local.manual_relationships,
