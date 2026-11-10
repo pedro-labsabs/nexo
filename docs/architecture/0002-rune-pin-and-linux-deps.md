@@ -68,7 +68,7 @@ In Surface::configure
 Surface does not support the adapter's queue family
 ```
 
-A ocorrência manifestou-se de forma esporádica durante a etapa de inicialização da janela nativa do Rune, sem produzir corrupção de memória ou pânico na aplicação NEXO, mas impedindo a apresentação do primeiro frame da janela naquela sessão específica.
+A ocorrência manifestou-se de forma esporádica durante a etapa de inicialização da janela nativa do Rune: o processo NEXO sofreu um **pânico (panic) em tempo de execução disparado a partir da stack gráfica (`wgpu-core`)** durante a chamada interna de `Surface::configure`, impedindo a apresentação do primeiro frame da janela naquela sessão específica e encerrando o processo de forma anômala.
 
 ### 4.2. Comportamento Demonstrado pelo Código Upstream (`wgpu-core` 30.0.1 e `rune` `42f2d35`)
 A inspeção detalhada do código-fonte upstream evidencia os seguintes comportamentos e invariantes formais:
@@ -87,10 +87,10 @@ A inspeção detalhada do código-fonte upstream evidencia os seguintes comporta
    ```
    O Rune inclui uma rotina assíncrona de pré-aquecimento de GPU (`prewarm_gpu()`), que invoca `Gpu::try_for_display(&event_loop)` em background antes mesmo da criação da janela nativa. Posteriormente, ao instanciar a janela, chama `Gpu::for_surface(..., &window)`.
 
-3. **Fatos Irrefutáveis Comprovados pelo Código:**
-   - O wgpu exige estritamente que a fila de comandos (queue family) do adaptador físico selecionado suporte a apresentação direta para a superfície da janela na conexão de display ativa.
-   - A falha não decorre de corrupção de memória, referências inválidas ou pânicos na camada de UI da aplicação NEXO, mas sim da recusa formal da API Vulkan/wgpu durante `Surface::configure`.
-   - O Rune delega a enumeração e a seleção de adaptadores à implementação padrão do wgpu (`Instance::request_adapter`), sem filtros customizados no código da aplicação.
+3. **Distinção Rigorosa dos Fatos Comprovados:**
+   - **Origem do erro:** Recusa do driver gráfico nativo / validação formal no `wgpu-core`. A camada Vulkan nativa (via `vkGetPhysicalDeviceSurfaceSupportKHR`) retorna incompatibilidade ou falha na fila de apresentação para a superfície X11/Wayland fornecida, fazendo com que `surface.get_capabilities(&self.adapter)` mapeie estritamente para o erro formal `UnsupportedQueueFamily` no `wgpu-core`. Não decorre de corrupção de memória ou referências inválidas no código do NEXO.
+   - **Comportamento observado no processo NEXO:** Pânico em tempo de execução (*runtime panic*) dentro do processo da aplicação NEXO, originado na stack gráfica do `wgpu-core` durante a chamada de `surface.configure` na inicialização da janela nativa (`window/create.rs:145`), abortando o processo antes da exibição do frame inicial.
+   - **Causa ambiental (delimitação):** O Rune delega a enumeração e a seleção de adaptadores à implementação padrão do wgpu (`Instance::request_adapter`), sem filtros customizados no código da aplicação. Conforme detalhado na seção 4.3 a seguir, a hipótese de divergência na seleção de adaptadores em ambientes híbridos/PRIME permanece estritamente como uma **hipótese de runtime ainda não comprovada por telemetria ambiental direta**, devendo ser tratada com o devido isolamento conceitual.
 
 ### 4.3. Hipótese de Runtime Não Comprovada (Sistemas Multi-GPU / PRIME Offload)
 - **Status:** *Hipótese de runtime não comprovada por telemetria ambiental direta.*
@@ -100,7 +100,7 @@ A inspeção detalhada do código-fonte upstream evidencia os seguintes comporta
 - **Rigor Técnico e Delimitação:**
   - Esta hipótese **não possui evidência ambiental comprovada** no ambiente de desenvolvimento local nem nos logs de execução do projeto.
   - Não foram constatados múltiplos adaptadores ativos divergentes nem logs do driver confirmando rejeição por PRIME no hardware de teste.
-  - Portanto, a documentação delimita expressamente essa teoria como hipótese não confirmada, sendo inadequado declarar causa-raiz comprovada sem evidência correspondente, ou modificar arbitrariamente o upstream Rune nem alterar seu SHA fixado para mitigar uma suposição.
+  - Portanto, a documentação delimita formalmente essa teoria como hipótese não confirmada, sendo inadequado declarar causa-raiz comprovada sem evidência correspondente, ou modificar arbitrariamente o upstream Rune nem alterar seu SHA fixado para mitigar uma suposição sem comprovação causal.
 
 ### 4.4. Alternativas Diagnósticas e de Contorno Realmente Disponíveis
 O Rune e o wgpu disponibilizam variáveis de ambiente oficiais para diagnosticar e controlar a seleção de GPU em tempo de execução:
@@ -145,15 +145,21 @@ Para garantir a estabilidade do ciclo de vida da aplicação nativa independente
 1. **Validação Headless Determinística:**
    - O teste `native_runtime_lifecycle_repeated_init_render_and_clean_drop` (em `crates/nexo-desktop/tests/lifecycle_tests.rs`) instancia sequencialmente o `Runtime` do Rune por 5 iterações completas, renderizando frames, alternando temas e destruindo as instâncias sem vazamentos de memória ou panics de encerramento.
 
-2. **Validação de Processo Nativo Real com Protocolo EWMH (`_NET_CLOSE_WINDOW`):**
-   - O teste de integração `native_window_process_lifecycle_clean_exit` executa uma verificação real de processo de ponta a ponta:
-     - Dispara o binário real compilado `nexo-desktop` (`CARGO_BIN_EXE_nexo-desktop`) como processo filho.
-     - Implementa o guard RAII `ChildGuard`, garantindo que `child.kill()` e `child.wait()` sejam chamados automaticamente em caso de pânico ou término prematuro, prevenindo processos órfãos ou zumbis.
-     - Efetua polling de até 5 segundos via `wmctrl -l` para certificar que a janela intitulada "NEXO" foi instanciada com sucesso pelo gerenciador de janelas.
-     - Envia requisição oficial de encerramento através do protocolo EWMH (`wmctrl -c NEXO`), despachando a mensagem cliente `_NET_CLOSE_WINDOW`.
-     - Aguarda o encerramento do processo e valida que o código de saída é estritamente `0` (`status.success()`).
-     - Lê o arquivo de log temporário gerado e assegura que não ocorreram mensagens de erro fatal ou pânico (`panicked at`, `fatal runtime error`).
-     - Em ambientes CI puramente headless (sem `DISPLAY`/`WAYLAND_DISPLAY` ou sem `wmctrl`), o teste executa skip explícito com mensagem informativa, evitando falsas alegações de conformidade de processo.
+2. **Validação de Processo Nativo Real com Associação Segura e Protocolo EWMH:**
+   - O teste de integração `native_window_process_lifecycle_clean_exit` executa uma verificação real de processo de ponta a ponta com garantias estritas de segurança:
+     - **Isolamento de Processo via RAII (`ChildGuard`):** Dispara o binário real compilado `nexo-desktop` (`CARGO_BIN_EXE_nexo-desktop`) como processo filho sob custódia do guard RAII `ChildGuard`. Em caso de qualquer falha, asserção, pânico ou timeout, o `drop` garante que `child.kill()` e `child.wait()` sejam executados imediatamente, eliminando o risco de processos órfãos ou zumbis.
+     - **Vinculação Estrita de Janela Exclusivamente por PID (`wmctrl -l -p`):** Elimina categoricamente a correspondência frágil por título de janela. Utiliza o comando `wmctrl -l -p` para obter a propriedade oficial `_NET_WM_PID` mantida pelo window manager. A função `parse_wmctrl_l_p` analisa a listagem bruta em estruturas `WindowInfo` (`id`, `desktop`, `pid`, `host`, `title`), preservando inclusive múltiplos espaços internos no título. A resolução via `find_window_by_pid` associa a janela estritamente ao PID do processo filho (`child.id()`).
+     - **Imunidade a Janelas Concorrentes ou Preexistentes:** Se houver outras janelas no ambiente com o título "NEXO" (por exemplo, sessões abertas manualmente pelo desenvolvedor ou instâncias anteriores), o teste ignora-as categoricamente pois seus PIDs não coincidem com o processo sob teste.
+     - **Encerramento Cirúrgico por Window ID Hexadecimal (`wmctrl -i -c`):** O encerramento gracioso não utiliza títulos (`wmctrl -c NEXO` foi totalmente abolido). A função `close_window_by_id` despacha a mensagem cliente `_NET_CLOSE_WINDOW` diretamente para o Window ID hexadecimal correspondente (`wmctrl -i -c <window_id>`), afetando exclusivamente a janela alvo.
+     - **Detecção Imediata de Saídas Prematuras:** Durante o polling da janela (intervalo de 100ms até 5s em `poll_child_window`), verifica periodicamente `child.try_wait()`. Se o processo filho sofrer um encerramento inesperado (seja por erro, pânico ou término com código 0) antes de mapear a janela, a rotina falha imediatamente com `LifecycleError::PrematureExit(code)` e descarrega os logs do processo para diagnóstico imediato.
+     - **Verificação Rigorosa de Código de Saída:** A rotina `wait_for_clean_exit` aguarda o término e valida via `verify_clean_exit` que o processo encerrou com código estritamente `0` (`status.success()`). Códigos diferentes de zero geram `LifecycleError::NonZeroExit(code)` e interrupções por sinal geram `LifecycleError::TerminatedBySignal`.
+     - **Tratamento Seguro de Limitações Ambientais e Ambientes sem EWMH:** Caso o ambiente não suporte a propriedade `_NET_WM_PID` (todas as janelas reportando PID 0) ou se execute sob Wayland puro sem suporte a PID, a rotina sinaliza `WindowBindingError::PidNotSupported` e aborta a verificação com skip informativo (`SKIPPED`), sem interagir com janelas de terceiros e sem emitir falsas declarações de sucesso.
+     - **Bateria de Regressões Automatizadas:** A suíte contém testes unitários e de integração dedicados que garantem cobertura para:
+       1. `regression_preexisting_nexo_window_is_not_closed`: Comprova que janelas pré-existentes intituladas "NEXO" não são associadas nem fechadas.
+       2. `regression_premature_child_exit_triggers_failure`: Comprova detecção e falha imediata em caso de término precoce com código 1 ou 0.
+       3. `regression_nonzero_exit_code_triggers_failure`: Comprova rejeição de códigos de saída não-zero.
+       4. `regression_child_hang_triggers_timeout_and_clean_kill`: Comprova disparo de timeout em processos em hang e limpeza garantida pelo `ChildGuard`.
+       5. `regression_missing_ewmh_or_display_handled_cleanly`: Comprova skip transparente em ambientes sem display, sem `wmctrl` ou sem suporte a `_NET_WM_PID`.
 
 ---
 
@@ -170,7 +176,7 @@ Para verificar o ciclo de vida da janela nativa e a resposta a eventos fora do a
 ```bash
 cargo test -p nexo-desktop --test lifecycle_tests -- --nocapture
 ```
-Executa a validação headless e, caso detecte sessão gráfica com window manager compatível com EWMH, abre a janela real, envia `wmctrl -c NEXO` e valida o encerramento com código `0`.
+Executa a validação headless (5 iterações completas do runtime), os testes determinísticos do parser de janelas, a bateria completa de regressões de ciclo de vida e, caso detecte sessão gráfica com window manager compatível com EWMH e suporte a `_NET_WM_PID`, abre a janela real, associa unicamente ao PID via `wmctrl -l -p`, despacha encerramento gracioso cirúrgico por Window ID (`wmctrl -i -c <window_id>`) e valida a terminação limpa com código de saída `0`.
 
 ### Execução Interativa Manual
 ```bash
@@ -197,8 +203,8 @@ cargo run -p nexo-desktop
 
 ### Estratégia de CI Headless
 Em runners GitHub Actions (`ubuntu-latest`), onde não há servidor X11 ou GPU física disponível:
-- A suíte automatizada `cargo test --workspace --locked` executa 18 testes determinísticos via headless `Runtime::new()`.
-- O teste de integração de janela nativa faz skip transparente quando `DISPLAY` e `wmctrl` estão ausentes.
+- A suíte automatizada `cargo test --workspace --locked` executa 23 testes determinísticos (18 testes headless de UI/Runtime e 5 testes de regressão de ciclo de vida e binding de janelas).
+- O teste de integração de processo nativo de ponta a ponta avalia as variáveis `DISPLAY`, `WAYLAND_DISPLAY`, a presença do utilitário `wmctrl` e o suporte a `_NET_WM_PID`, efetuando skip transparente e documentado quando os requisitos de desktop estão ausentes, prevenindo falsas alegações de conformidade.
 - A geração de snapshots visuais (`cargo run -p nexo-desktop -- --snap <path>`) valida a árvore de layout, renderização de tipografia e estilo sem necessidade de janela nativa.
 
 ---
