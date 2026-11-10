@@ -1,8 +1,10 @@
 pub mod error;
+pub mod indicators;
 pub mod model;
 pub mod types;
 
 pub use error::{NexoError, Result};
+pub use indicators::{IndicatorDetail, IndicatorStatus, RepositoryIndicators, compute_indicators};
 pub use model::{
     Affiliation, Organization, OwnerType, RepositoryOwner, Snapshot, SnapshotMetadata, TreeSignals,
 };

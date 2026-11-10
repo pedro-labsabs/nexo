@@ -121,7 +121,7 @@ pub struct Repository {
     pub affiliation: Affiliation,
     pub tree_signals: TreeSignals,
     #[serde(default)]
-    pub indicators: Option<serde_json::Value>,
+    pub indicators: Option<crate::indicators::RepositoryIndicators>,
 }
 
 /// Snapshot completo contendo metadados, organizações, repositórios, relacionamentos e anotações.

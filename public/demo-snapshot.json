@@ -82,6 +82,8 @@
         "readmePath": "README.md",
         "contributingFound": true,
         "licenseFileFound": true,
+        "packageJsonFound": false,
+        "isEmptyRepo": false,
         "treeTruncated": false,
         "treeInspected": true
       },
@@ -103,8 +105,7 @@
           },
           "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
           "limitations": [
-            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
-            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando."
           ]
         },
         "ciConfiguration": {
@@ -118,7 +119,8 @@
             "ciEvidence": [
               ".github/workflows/ci.yml",
               ".github/workflows/release.yml"
-            ]
+            ],
+            "treeTruncated": false
           },
           "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
           "limitations": [
@@ -140,7 +142,8 @@
             "docEvidence": [
               "docs/architecture.md",
               "docs/indicators.md"
-            ]
+            ],
+            "treeTruncated": false
           },
           "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
           "limitations": [
@@ -235,6 +238,8 @@
         "readmePath": "README.md",
         "contributingFound": false,
         "licenseFileFound": true,
+        "packageJsonFound": false,
+        "isEmptyRepo": false,
         "treeTruncated": false,
         "treeInspected": true
       },
@@ -254,8 +259,7 @@
           },
           "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
           "limitations": [
-            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
-            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando."
           ]
         },
         "ciConfiguration": {
@@ -268,7 +272,8 @@
             "hasCI": true,
             "ciEvidence": [
               ".github/workflows/test.yml"
-            ]
+            ],
+            "treeTruncated": false
           },
           "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
           "limitations": [
@@ -289,7 +294,8 @@
             "licenseFileFound": true,
             "docEvidence": [
               "docs/setup.md"
-            ]
+            ],
+            "treeTruncated": false
           },
           "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
           "limitations": [
@@ -377,6 +383,8 @@
         "readmePath": "README.md",
         "contributingFound": false,
         "licenseFileFound": false,
+        "packageJsonFound": false,
+        "isEmptyRepo": false,
         "treeTruncated": false,
         "treeInspected": true
       },
@@ -394,8 +402,7 @@
           },
           "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
           "limitations": [
-            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
-            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando."
           ]
         },
         "ciConfiguration": {
@@ -406,7 +413,8 @@
           "summary": "Nenhum arquivo de automação CI/CD (.github/workflows, etc.) encontrado.",
           "inputs": {
             "hasCI": false,
-            "ciEvidence": []
+            "ciEvidence": [],
+            "treeTruncated": false
           },
           "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
           "limitations": [
@@ -425,7 +433,8 @@
             "readmeFound": true,
             "contributingFound": false,
             "licenseFileFound": false,
-            "docEvidence": []
+            "docEvidence": [],
+            "treeTruncated": false
           },
           "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
           "limitations": [
@@ -520,6 +529,8 @@
         "readmePath": "README.md",
         "contributingFound": true,
         "licenseFileFound": true,
+        "packageJsonFound": false,
+        "isEmptyRepo": false,
         "treeTruncated": false,
         "treeInspected": true
       },
@@ -539,8 +550,7 @@
           },
           "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
           "limitations": [
-            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
-            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando."
           ]
         },
         "ciConfiguration": {
@@ -553,7 +563,8 @@
             "hasCI": true,
             "ciEvidence": [
               ".github/workflows/verify.yml"
-            ]
+            ],
+            "treeTruncated": false
           },
           "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
           "limitations": [
@@ -575,7 +586,8 @@
             "docEvidence": [
               "docs/rfc-001.md",
               "docs/security.md"
-            ]
+            ],
+            "treeTruncated": false
           },
           "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
           "limitations": [
@@ -670,6 +682,8 @@
         "readmePath": "README.md",
         "contributingFound": true,
         "licenseFileFound": true,
+        "packageJsonFound": false,
+        "isEmptyRepo": false,
         "treeTruncated": false,
         "treeInspected": true
       },
@@ -690,8 +704,7 @@
           },
           "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
           "limitations": [
-            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
-            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando."
           ]
         },
         "ciConfiguration": {
@@ -704,7 +717,8 @@
             "hasCI": true,
             "ciEvidence": [
               ".github/workflows/ci.yml"
-            ]
+            ],
+            "treeTruncated": false
           },
           "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
           "limitations": [
@@ -725,7 +739,8 @@
             "licenseFileFound": true,
             "docEvidence": [
               "docs/api.md"
-            ]
+            ],
+            "treeTruncated": false
           },
           "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
           "limitations": [
@@ -816,6 +831,8 @@
         "readmePath": "README.md",
         "contributingFound": false,
         "licenseFileFound": true,
+        "packageJsonFound": false,
+        "isEmptyRepo": false,
         "treeTruncated": false,
         "treeInspected": true
       },
@@ -833,8 +850,7 @@
           },
           "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
           "limitations": [
-            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
-            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando."
           ]
         },
         "ciConfiguration": {
@@ -847,7 +863,8 @@
             "hasCI": true,
             "ciEvidence": [
               ".github/workflows/deploy.yml"
-            ]
+            ],
+            "treeTruncated": false
           },
           "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
           "limitations": [
@@ -866,7 +883,8 @@
             "readmeFound": true,
             "contributingFound": false,
             "licenseFileFound": true,
-            "docEvidence": []
+            "docEvidence": [],
+            "treeTruncated": false
           },
           "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
           "limitations": [
@@ -953,6 +971,8 @@
         "readmeFound": false,
         "contributingFound": false,
         "licenseFileFound": false,
+        "packageJsonFound": false,
+        "isEmptyRepo": false,
         "treeTruncated": false,
         "treeInspected": true
       },
@@ -970,8 +990,7 @@
           },
           "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
           "limitations": [
-            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando.",
-            "Árvores truncadas pelo GitHub podem omitir pastas de testes muito profundas."
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando."
           ]
         },
         "ciConfiguration": {
@@ -982,7 +1001,8 @@
           "summary": "Nenhum arquivo de automação CI/CD (.github/workflows, etc.) encontrado.",
           "inputs": {
             "hasCI": false,
-            "ciEvidence": []
+            "ciEvidence": [],
+            "treeTruncated": false
           },
           "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
           "limitations": [
@@ -1001,7 +1021,8 @@
             "readmeFound": false,
             "contributingFound": false,
             "licenseFileFound": false,
-            "docEvidence": []
+            "docEvidence": [],
+            "treeTruncated": false
           },
           "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
           "limitations": [
@@ -1086,6 +1107,8 @@
         "readmeFound": false,
         "contributingFound": false,
         "licenseFileFound": false,
+        "packageJsonFound": false,
+        "isEmptyRepo": false,
         "treeTruncated": false,
         "treeInspected": false,
         "inspectionError": "403 Forbidden: Tree access denied or repository empty"
@@ -1132,7 +1155,8 @@
             "readmeFound": false,
             "contributingFound": false,
             "licenseFileFound": false,
-            "docEvidence": []
+            "docEvidence": [],
+            "treeTruncated": false
           },
           "calculation": "Baseado apenas na descrição do repositório devido a árvore inacessível.",
           "limitations": [
@@ -1286,6 +1310,7 @@
     }
   ],
   "userAnnotations": {
+    "deletedRelationships": [],
     "schemaVersion": "1.0",
     "exportedAt": "2026-11-01T12:00:00Z",
     "manualRelationships": [
