@@ -1,3 +1,4 @@
+use crate::relations::Relationship;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -134,7 +135,7 @@ pub struct Snapshot {
     #[serde(default)]
     pub repositories: Vec<Repository>,
     #[serde(default)]
-    pub relationships: Vec<serde_json::Value>,
+    pub relationships: Vec<Relationship>,
     #[serde(default)]
     pub user_annotations: Option<serde_json::Value>,
 }
