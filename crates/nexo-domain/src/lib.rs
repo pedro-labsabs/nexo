@@ -1,9 +1,15 @@
+pub mod annotations;
 pub mod error;
 pub mod indicators;
 pub mod model;
 pub mod relations;
 pub mod types;
 
+pub use annotations::{
+    CommercialPotential, PotentialAssessment, StrategicValue, UserAnnotations,
+    get_relationship_logical_key, get_timestamp, is_valid_date, merge_manual_relationships,
+    merge_potential_assessments, merge_user_annotations,
+};
 pub use error::{NexoError, Result};
 pub use indicators::{IndicatorDetail, IndicatorStatus, RepositoryIndicators, compute_indicators};
 pub use model::{

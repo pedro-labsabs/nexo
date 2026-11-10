@@ -14,6 +14,24 @@ pub enum RelationType {
     Custom,
 }
 
+impl RelationType {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            RelationType::BelongsTo => "belongs_to",
+            RelationType::References => "references",
+            RelationType::DependsOn => "depends_on",
+            RelationType::ForkOf => "fork_of",
+            RelationType::Custom => "custom",
+        }
+    }
+}
+
+impl std::fmt::Display for RelationType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
 /// Proveniência da relação: automática (inferida por evidência explícita) ou manual (anotação do usuário).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
