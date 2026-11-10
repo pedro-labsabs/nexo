@@ -1,0 +1,132 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "createdAt": "2026-11-01T12:00:00.000Z",
+    "referenceDate": "2026-11-01T12:00:00.000Z",
+    "authenticatedUser": "synthetic-tester",
+    "totalRepositories": 2,
+    "incompleteSync": false,
+    "syncWarnings": []
+  },
+  "organizations": [
+    {
+      "id": 901,
+      "login": "synthetic-org",
+      "description": "Synthetic testing organization",
+      "repositoryCount": 2
+    }
+  ],
+  "repositories": [
+    {
+      "id": 1023,
+      "nodeId": "R_synth_1023",
+      "name": "service-alpha",
+      "fullName": "synthetic-org/service-alpha",
+      "owner": {
+        "login": "synthetic-org",
+        "id": 901,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-org/service-alpha",
+      "description": "Microservice alpha",
+      "fork": false,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2026-10-20T00:00:00.000Z",
+      "pushedAt": "2026-10-20T00:00:00.000Z",
+      "sizeKb": 1000,
+      "stargazersCount": 10,
+      "watchersCount": 2,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": "Go",
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": true,
+        "testEvidence": ["main_test.go"],
+        "hasCI": false,
+        "ciEvidence": [],
+        "hasDocumentation": true,
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": false,
+        "licenseFileFound": true,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    },
+    {
+      "id": 1024,
+      "nodeId": "R_synth_1024",
+      "name": "service-beta",
+      "fullName": "synthetic-org/service-beta",
+      "owner": {
+        "login": "synthetic-org",
+        "id": 901,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-org/service-beta",
+      "description": "Microservice beta",
+      "fork": false,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2026-10-20T00:00:00.000Z",
+      "pushedAt": "2026-10-20T00:00:00.000Z",
+      "sizeKb": 1000,
+      "stargazersCount": 10,
+      "watchersCount": 2,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": "Go",
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": true,
+        "testEvidence": ["main_test.go"],
+        "hasCI": false,
+        "ciEvidence": [],
+        "hasDocumentation": true,
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": false,
+        "licenseFileFound": true,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_belongs_1023_901",
+      "source": "1023",
+      "target": "901",
+      "sourceType": "repository",
+      "targetType": "organization",
+      "type": "belongs_to",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Repositório synthetic-org/service-alpha pertence à organização synthetic-org",
+      "description": "Membro da organização synthetic-org",
+      "createdAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "rel_manual_custom_1023_1024",
+      "source": "1023",
+      "target": "1024",
+      "sourceType": "repository",
+      "targetType": "repository",
+      "type": "custom",
+      "provenance": "manual",
+      "verified": false,
+      "evidence": "Curadoria manual do arquiteto",
+      "description": "Ambos compartilham o mesmo contrato gRPC de autenticação",
+      "createdAt": "2026-06-01T10:00:00.000Z",
+      "updatedAt": "2026-06-01T10:00:00.000Z"
+    }
+  ]
+}

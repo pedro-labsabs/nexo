@@ -1,0 +1,12 @@
+{
+  "scenario": "missing_mandatory_fields",
+  "valid": false,
+  "validationErrors": [
+    "metadata.authenticatedUser: Required",
+    "repositories.0.nodeId: Required",
+    "repositories.0.name: Required"
+  ],
+  "indicators": [],
+  "extractedRelationships": [],
+  "mergedAnnotations": null
+}

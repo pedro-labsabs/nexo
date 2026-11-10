@@ -1,0 +1,66 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "createdAt": "2026-11-01T12:00:00.000Z",
+    "referenceDate": "2026-11-01T12:00:00.000Z",
+    "authenticatedUser": "synthetic-tester",
+    "totalRepositories": 1,
+    "incompleteSync": false,
+    "syncWarnings": []
+  },
+  "organizations": [
+    {
+      "id": 901,
+      "login": "synthetic-org",
+      "description": "Synthetic testing organization",
+      "repositoryCount": 1
+    }
+  ],
+  "repositories": [
+    {
+      "id": 1005,
+      "nodeId": "R_synth_1005",
+      "name": "disabled-service",
+      "fullName": "synthetic-org/disabled-service",
+      "owner": {
+        "login": "synthetic-org",
+        "id": 901,
+        "type": "Organization"
+      },
+      "isPrivate": true,
+      "htmlUrl": "https://github.com/synthetic-org/disabled-service",
+      "description": "Administrative disabled repository",
+      "fork": false,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2026-10-01T00:00:00.000Z",
+      "pushedAt": "2026-10-01T00:00:00.000Z",
+      "sizeKb": 1200,
+      "stargazersCount": 0,
+      "watchersCount": 0,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": "Go",
+      "languages": { "Go": 12000 },
+      "archived": false,
+      "disabled": true,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": false,
+        "testEvidence": [],
+        "hasCI": false,
+        "ciEvidence": [],
+        "hasDocumentation": false,
+        "documentationEvidence": [],
+        "readmeFound": false,
+        "contributingFound": false,
+        "licenseFileFound": false,
+        "packageJsonFound": false,
+        "isEmptyRepo": false,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    }
+  ],
+  "relationships": []
+}

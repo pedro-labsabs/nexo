@@ -1,0 +1,10 @@
+{
+  "scenario": "unknown_version",
+  "valid": false,
+  "validationErrors": [
+    "metadata.version: Invalid literal value, expected \"1.0\""
+  ],
+  "indicators": [],
+  "extractedRelationships": [],
+  "mergedAnnotations": null
+}

@@ -1,0 +1,116 @@
+{
+  "scenario": "uninspected_tree",
+  "valid": true,
+  "validationErrors": [],
+  "indicators": [
+    {
+      "repositoryId": 1006,
+      "repositoryName": "uninspected-repo",
+      "overallQualityScore": 95,
+      "indicators": {
+        "testInfrastructure": {
+          "id": "test_infrastructure",
+          "name": "Infraestrutura de Testes",
+          "status": "unknown",
+          "score": 0,
+          "summary": "Árvore de arquivos não inspecionada ou inacessível via API.",
+          "inputs": {
+            "treeInspected": false,
+            "inspectionError": null
+          },
+          "calculation": "Nenhum dado de arquivo disponível para inspeção.",
+          "limitations": [
+            "A ausência de acesso à árvore impede checar arquivos de testes.",
+            "Não foi presumido resultado negativo."
+          ]
+        },
+        "ciConfiguration": {
+          "id": "ci_configuration",
+          "name": "Configuração de CI/CD",
+          "status": "unknown",
+          "score": 0,
+          "summary": "Árvore de arquivos não inspecionada ou inacessível.",
+          "inputs": {
+            "treeInspected": false
+          },
+          "calculation": "Nenhum dado de arquivo disponível.",
+          "limitations": [
+            "Sem acesso aos arquivos do repositório para verificar diretórios de workflows."
+          ]
+        },
+        "documentation": {
+          "id": "documentation",
+          "name": "Documentação do Projeto",
+          "status": "unknown",
+          "score": 40,
+          "summary": "Descrição básica presente, mas arquivos de documentação não puderam ser verificados.",
+          "inputs": {
+            "hasDescription": true,
+            "readmeFound": false,
+            "contributingFound": false,
+            "licenseFileFound": false,
+            "docEvidence": [],
+            "treeTruncated": false
+          },
+          "calculation": "Baseado apenas na descrição do repositório devido a árvore inacessível.",
+          "limitations": [
+            "Árvore de arquivos inacessível; checagem de README e guias não pôde ser executada."
+          ]
+        },
+        "activityRecency": {
+          "id": "activity_recency",
+          "name": "Recência de Atividade",
+          "status": "passed",
+          "score": 100,
+          "summary": "Atividade muito recente: último push há 17 dias.",
+          "inputs": {
+            "pushedAt": "2026-10-15T00:00:00.000Z",
+            "referenceDate": "2026-11-01T12:00:00.000Z",
+            "daysSinceLastPush": 17
+          },
+          "calculation": "<=30d: 100, <=90d: 80, <=180d: 60, <=365d: 40, >365d: 15.",
+          "limitations": [
+            "A recência de push mede frequência temporal, não produtividade, estabilidade ou valor do código.",
+            "Projetos maduros e estáveis podem ter baixa atividade recente propositalmente."
+          ]
+        },
+        "maintenanceSignals": {
+          "id": "maintenance_signals",
+          "name": "Sinais de Manutenção",
+          "status": "passed",
+          "score": 90,
+          "summary": "Sinais estruturais e operacionais ativos (Branch: main, Issues: 0).",
+          "inputs": {
+            "archived": false,
+            "disabled": false,
+            "openIssuesCount": 0,
+            "sizeKb": 300,
+            "defaultBranch": "main"
+          },
+          "calculation": "Base 80, bônus para branch main (+10) e licença (+10), penalidades para repo vazio ou desativado.",
+          "limitations": [
+            "A quantidade de issues abertas NÃO é prova isolada de baixa qualidade (projetos populares recebem muitas issues).",
+            "Tamanho em KB não reflete a complexidade ou elegância da arquitetura."
+          ]
+        },
+        "overallQualityScore": 95
+      }
+    }
+  ],
+  "extractedRelationships": [
+    {
+      "id": "rel_belongs_1006_901",
+      "source": "1006",
+      "target": "901",
+      "sourceType": "repository",
+      "targetType": "organization",
+      "type": "belongs_to",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Repositório synthetic-org/uninspected-repo pertence à organização synthetic-org",
+      "description": "Membro da organização synthetic-org",
+      "createdAt": "2024-05-01T00:00:00.000Z"
+    }
+  ],
+  "mergedAnnotations": null
+}

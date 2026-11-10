@@ -1,0 +1,105 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "createdAt": "2026-11-01T12:00:00.000Z",
+    "referenceDate": "2026-11-01T12:00:00.000Z",
+    "authenticatedUser": "synthetic-tester",
+    "totalRepositories": 2,
+    "incompleteSync": false,
+    "syncWarnings": []
+  },
+  "organizations": [
+    {
+      "id": 901,
+      "login": "synthetic-org",
+      "description": "Synthetic testing organization",
+      "repositoryCount": 2
+    }
+  ],
+  "repositories": [
+    {
+      "id": 1021,
+      "nodeId": "R_synth_1021",
+      "name": "synth-shared-core",
+      "fullName": "synthetic-org/synth-shared-core",
+      "owner": {
+        "login": "synthetic-org",
+        "id": 901,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-org/synth-shared-core",
+      "description": "Shared dependency library",
+      "fork": false,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2026-10-20T00:00:00.000Z",
+      "pushedAt": "2026-10-20T00:00:00.000Z",
+      "sizeKb": 1000,
+      "stargazersCount": 10,
+      "watchersCount": 2,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": "TypeScript",
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": false,
+        "hasCI": false,
+        "hasDocumentation": true,
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": false,
+        "licenseFileFound": true,
+        "packageJsonFound": true,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    },
+    {
+      "id": 1022,
+      "nodeId": "R_synth_1022",
+      "name": "synth-consumer-app",
+      "fullName": "synthetic-org/synth-consumer-app",
+      "owner": {
+        "login": "synthetic-org",
+        "id": 901,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-org/synth-consumer-app",
+      "description": "Application depending on synth-shared-core via git URL",
+      "fork": false,
+      "createdAt": "2025-02-01T00:00:00.000Z",
+      "updatedAt": "2026-10-25T00:00:00.000Z",
+      "pushedAt": "2026-10-25T00:00:00.000Z",
+      "sizeKb": 2000,
+      "stargazersCount": 5,
+      "watchersCount": 1,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": "TypeScript",
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": false,
+        "hasCI": false,
+        "hasDocumentation": true,
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": false,
+        "licenseFileFound": true,
+        "packageJsonFound": true,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    }
+  ],
+  "relationships": [],
+  "manifestContents": {
+    "1022": "{\"name\": \"@synthetic-org/synth-consumer-app\", \"dependencies\": { \"@synthetic-org/synth-shared-core\": \"git+https://github.com/synthetic-org/synth-shared-core.git#v1.0.0\", \"external-lib\": \"^2.0.0\" }}"
+  }
+}

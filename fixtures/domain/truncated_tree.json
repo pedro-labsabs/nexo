@@ -1,0 +1,66 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "createdAt": "2026-11-01T12:00:00.000Z",
+    "referenceDate": "2026-11-01T12:00:00.000Z",
+    "authenticatedUser": "synthetic-tester",
+    "totalRepositories": 1,
+    "incompleteSync": false,
+    "syncWarnings": []
+  },
+  "organizations": [
+    {
+      "id": 901,
+      "login": "synthetic-org",
+      "description": "Synthetic testing organization",
+      "repositoryCount": 1
+    }
+  ],
+  "repositories": [
+    {
+      "id": 1007,
+      "nodeId": "R_synth_1007",
+      "name": "huge-truncated-repo",
+      "fullName": "synthetic-org/huge-truncated-repo",
+      "owner": {
+        "login": "synthetic-org",
+        "id": 901,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-org/huge-truncated-repo",
+      "description": "Very large monorepo that hit GitHub file tree limits",
+      "fork": false,
+      "createdAt": "2023-01-01T00:00:00.000Z",
+      "updatedAt": "2026-10-28T00:00:00.000Z",
+      "pushedAt": "2026-10-28T00:00:00.000Z",
+      "sizeKb": 850000,
+      "stargazersCount": 400,
+      "watchersCount": 50,
+      "openIssuesCount": 12,
+      "forksCount": 30,
+      "primaryLanguage": "TypeScript",
+      "languages": { "TypeScript": 1500000 },
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": false,
+        "testEvidence": [],
+        "hasCI": false,
+        "ciEvidence": [],
+        "hasDocumentation": false,
+        "documentationEvidence": [],
+        "readmeFound": false,
+        "contributingFound": false,
+        "licenseFileFound": false,
+        "packageJsonFound": true,
+        "isEmptyRepo": false,
+        "treeTruncated": true,
+        "treeInspected": true
+      }
+    }
+  ],
+  "relationships": []
+}

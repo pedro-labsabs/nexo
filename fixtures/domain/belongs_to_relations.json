@@ -1,0 +1,144 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "createdAt": "2026-11-01T12:00:00.000Z",
+    "referenceDate": "2026-11-01T12:00:00.000Z",
+    "authenticatedUser": "synthetic-tester",
+    "totalRepositories": 3,
+    "incompleteSync": false,
+    "syncWarnings": []
+  },
+  "organizations": [
+    {
+      "id": 910,
+      "login": "org-alpha",
+      "name": "Alpha Labs",
+      "description": "Alpha org",
+      "repositoryCount": 1
+    },
+    {
+      "id": 920,
+      "login": "org-beta",
+      "name": "Beta Core",
+      "description": "Beta org",
+      "repositoryCount": 1
+    }
+  ],
+  "repositories": [
+    {
+      "id": 1016,
+      "nodeId": "R_synth_1016",
+      "name": "alpha-repo",
+      "fullName": "org-alpha/alpha-repo",
+      "owner": {
+        "login": "org-alpha",
+        "id": 910,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/org-alpha/alpha-repo",
+      "description": "Alpha repo",
+      "fork": false,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2026-10-01T00:00:00.000Z",
+      "pushedAt": "2026-10-01T00:00:00.000Z",
+      "sizeKb": 1000,
+      "stargazersCount": 5,
+      "watchersCount": 1,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": "Rust",
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "organization_member",
+      "treeSignals": {
+        "hasTests": false,
+        "hasCI": false,
+        "hasDocumentation": false,
+        "readmeFound": false,
+        "contributingFound": false,
+        "licenseFileFound": false,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    },
+    {
+      "id": 1017,
+      "nodeId": "R_synth_1017",
+      "name": "beta-repo",
+      "fullName": "org-beta/beta-repo",
+      "owner": {
+        "login": "org-beta",
+        "id": 920,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/org-beta/beta-repo",
+      "description": "Beta repo",
+      "fork": false,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2026-10-01T00:00:00.000Z",
+      "pushedAt": "2026-10-01T00:00:00.000Z",
+      "sizeKb": 1000,
+      "stargazersCount": 5,
+      "watchersCount": 1,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": "TypeScript",
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "organization_member",
+      "treeSignals": {
+        "hasTests": false,
+        "hasCI": false,
+        "hasDocumentation": false,
+        "readmeFound": false,
+        "contributingFound": false,
+        "licenseFileFound": false,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    },
+    {
+      "id": 1018,
+      "nodeId": "R_synth_1018",
+      "name": "user-independent-repo",
+      "fullName": "synthetic-user/user-independent-repo",
+      "owner": {
+        "login": "synthetic-user",
+        "id": 888,
+        "type": "User"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-user/user-independent-repo",
+      "description": "User repo not belonging to an org",
+      "fork": false,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2026-10-01T00:00:00.000Z",
+      "pushedAt": "2026-10-01T00:00:00.000Z",
+      "sizeKb": 1000,
+      "stargazersCount": 5,
+      "watchersCount": 1,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": "Python",
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": false,
+        "hasCI": false,
+        "hasDocumentation": false,
+        "readmeFound": false,
+        "contributingFound": false,
+        "licenseFileFound": false,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    }
+  ],
+  "relationships": []
+}

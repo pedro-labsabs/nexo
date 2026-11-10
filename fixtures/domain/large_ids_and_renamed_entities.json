@@ -1,0 +1,128 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "createdAt": "2026-11-01T12:00:00.000Z",
+    "referenceDate": "2026-11-01T12:00:00.000Z",
+    "authenticatedUser": "synthetic-tester",
+    "totalRepositories": 2,
+    "incompleteSync": false,
+    "syncWarnings": []
+  },
+  "organizations": [
+    {
+      "id": 4294967296,
+      "login": "large-id-org",
+      "name": "Large ID Organization",
+      "avatarUrl": "https://example.com/large.png",
+      "description": "Org with 64-bit identifier",
+      "repositoryCount": 2
+    }
+  ],
+  "repositories": [
+    {
+      "id": 9007199254740991,
+      "nodeId": "R_synth_large_9007199254740991",
+      "name": "renamed-v2-system",
+      "fullName": "large-id-org/renamed-v2-system",
+      "owner": {
+        "login": "large-id-org",
+        "id": 4294967296,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/large-id-org/renamed-v2-system",
+      "description": "Renamed entity with max safe integer 64-bit ID",
+      "fork": false,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2026-10-29T00:00:00.000Z",
+      "pushedAt": "2026-10-29T00:00:00.000Z",
+      "sizeKb": 10000,
+      "stargazersCount": 500,
+      "watchersCount": 40,
+      "openIssuesCount": 5,
+      "forksCount": 25,
+      "primaryLanguage": "Rust",
+      "languages": { "Rust": 100000 },
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": true,
+        "testEvidence": ["tests/it.rs"],
+        "hasCI": true,
+        "ciEvidence": [".github/workflows/ci.yml"],
+        "hasDocumentation": true,
+        "documentationEvidence": ["docs/index.md"],
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": true,
+        "licenseFileFound": true,
+        "packageJsonFound": false,
+        "isEmptyRepo": false,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    },
+    {
+      "id": 8589934592,
+      "nodeId": "R_synth_large_8589934592",
+      "name": "secondary-large-repo",
+      "fullName": "large-id-org/secondary-large-repo",
+      "owner": {
+        "login": "large-id-org",
+        "id": 4294967296,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/large-id-org/secondary-large-repo",
+      "description": "Secondary entity exceeding 32 bits",
+      "fork": false,
+      "createdAt": "2024-06-01T00:00:00.000Z",
+      "updatedAt": "2026-10-20T00:00:00.000Z",
+      "pushedAt": "2026-10-20T00:00:00.000Z",
+      "sizeKb": 4000,
+      "stargazersCount": 80,
+      "watchersCount": 12,
+      "openIssuesCount": 1,
+      "forksCount": 4,
+      "primaryLanguage": "TypeScript",
+      "languages": { "TypeScript": 40000 },
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": true,
+        "testEvidence": ["tests/it.test.ts"],
+        "hasCI": false,
+        "ciEvidence": [],
+        "hasDocumentation": true,
+        "documentationEvidence": [],
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": false,
+        "licenseFileFound": true,
+        "packageJsonFound": true,
+        "isEmptyRepo": false,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_belongs_9007199254740991_4294967296",
+      "source": "9007199254740991",
+      "target": "4294967296",
+      "sourceType": "repository",
+      "targetType": "organization",
+      "type": "belongs_to",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Repositório large-id-org/renamed-v2-system pertence à organização large-id-org",
+      "description": "Membro da organização large-id-org",
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    }
+  ]
+}

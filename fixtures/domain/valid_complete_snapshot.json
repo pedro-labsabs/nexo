@@ -1,0 +1,178 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "createdAt": "2026-11-01T12:00:00.000Z",
+    "referenceDate": "2026-11-01T12:00:00.000Z",
+    "authenticatedUser": "synthetic-tester",
+    "totalRepositories": 2,
+    "incompleteSync": false,
+    "syncWarnings": []
+  },
+  "organizations": [
+    {
+      "id": 901,
+      "login": "synthetic-org",
+      "name": "Synthetic Org Ltd",
+      "avatarUrl": "https://example.com/synth-org.png",
+      "description": "Synthetic testing organization",
+      "repositoryCount": 2
+    }
+  ],
+  "repositories": [
+    {
+      "id": 1001,
+      "nodeId": "R_synth_1001",
+      "name": "synthetic-core",
+      "fullName": "synthetic-org/synthetic-core",
+      "owner": {
+        "login": "synthetic-org",
+        "id": 901,
+        "avatarUrl": "https://example.com/synth-org.png",
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-org/synthetic-core",
+      "description": "High performance synthetic core library",
+      "fork": false,
+      "createdAt": "2025-01-10T10:00:00.000Z",
+      "updatedAt": "2026-10-25T14:00:00.000Z",
+      "pushedAt": "2026-10-25T14:00:00.000Z",
+      "sizeKb": 1500,
+      "stargazersCount": 120,
+      "watchersCount": 15,
+      "openIssuesCount": 3,
+      "forksCount": 8,
+      "primaryLanguage": "TypeScript",
+      "languages": {
+        "TypeScript": 85000,
+        "CSS": 5000
+      },
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "organization_member",
+      "treeSignals": {
+        "hasTests": true,
+        "testEvidence": [
+          "tests/core.test.ts",
+          "vitest.config.ts"
+        ],
+        "hasCI": true,
+        "ciEvidence": [
+          ".github/workflows/ci.yml"
+        ],
+        "hasDocumentation": true,
+        "documentationEvidence": [
+          "docs/architecture.md"
+        ],
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": true,
+        "licenseFileFound": true,
+        "packageJsonFound": true,
+        "isEmptyRepo": false,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    },
+    {
+      "id": 1002,
+      "nodeId": "R_synth_1002",
+      "name": "synthetic-cli",
+      "fullName": "synthetic-org/synthetic-cli",
+      "owner": {
+        "login": "synthetic-org",
+        "id": 901,
+        "avatarUrl": "https://example.com/synth-org.png",
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-org/synthetic-cli",
+      "description": "Synthetic command-line interface tool",
+      "fork": false,
+      "createdAt": "2025-03-15T09:00:00.000Z",
+      "updatedAt": "2026-10-20T11:00:00.000Z",
+      "pushedAt": "2026-10-20T11:00:00.000Z",
+      "sizeKb": 900,
+      "stargazersCount": 45,
+      "watchersCount": 6,
+      "openIssuesCount": 1,
+      "forksCount": 2,
+      "primaryLanguage": "Rust",
+      "languages": {
+        "Rust": 42000
+      },
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "organization_member",
+      "treeSignals": {
+        "hasTests": true,
+        "testEvidence": [
+          "tests/cli_tests.rs"
+        ],
+        "hasCI": false,
+        "ciEvidence": [],
+        "hasDocumentation": true,
+        "documentationEvidence": [],
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": false,
+        "licenseFileFound": true,
+        "packageJsonFound": false,
+        "isEmptyRepo": false,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_belongs_1001_901",
+      "source": "1001",
+      "target": "901",
+      "sourceType": "repository",
+      "targetType": "organization",
+      "type": "belongs_to",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Repositório synthetic-org/synthetic-core pertence à organização synthetic-org",
+      "description": "Membro da organização synthetic-org",
+      "createdAt": "2025-01-10T10:00:00.000Z"
+    },
+    {
+      "id": "rel_belongs_1002_901",
+      "source": "1002",
+      "target": "901",
+      "sourceType": "repository",
+      "targetType": "organization",
+      "type": "belongs_to",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Repositório synthetic-org/synthetic-cli pertence à organização synthetic-org",
+      "description": "Membro da organização synthetic-org",
+      "createdAt": "2025-03-15T09:00:00.000Z"
+    }
+  ],
+  "userAnnotations": {
+    "schemaVersion": "1.0",
+    "exportedAt": "2026-11-01T12:00:00.000Z",
+    "authenticatedUser": "synthetic-tester",
+    "manualRelationships": [],
+    "deletedRelationships": [],
+    "potentialAssessments": {
+      "1001": {
+        "repositoryId": 1001,
+        "strategicValue": "critical",
+        "commercialPotential": "production_ready",
+        "targetAudience": "Enterprise Developers",
+        "notes": "Core engine component",
+        "tags": [
+          "core",
+          "infra"
+        ],
+        "updatedAt": "2026-11-01T12:00:00.000Z"
+      }
+    }
+  }
+}

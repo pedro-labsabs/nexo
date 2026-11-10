@@ -1,0 +1,118 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "createdAt": "2026-11-01T12:00:00.000Z",
+    "referenceDate": "2026-11-01T12:00:00.000Z",
+    "authenticatedUser": "synthetic-tester",
+    "totalRepositories": 2,
+    "incompleteSync": false,
+    "syncWarnings": []
+  },
+  "organizations": [
+    {
+      "id": 901,
+      "login": "synthetic-org",
+      "description": "Synthetic testing organization",
+      "repositoryCount": 2
+    }
+  ],
+  "repositories": [
+    {
+      "id": 1025,
+      "nodeId": "R_synth_1025",
+      "name": "upstream-template",
+      "fullName": "synthetic-org/upstream-template",
+      "owner": {
+        "login": "synthetic-org",
+        "id": 901,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-org/upstream-template",
+      "description": "Original upstream project",
+      "fork": false,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2026-10-20T00:00:00.000Z",
+      "pushedAt": "2026-10-20T00:00:00.000Z",
+      "sizeKb": 1000,
+      "stargazersCount": 50,
+      "watchersCount": 10,
+      "openIssuesCount": 0,
+      "forksCount": 5,
+      "primaryLanguage": "TypeScript",
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": true,
+        "testEvidence": ["tests/it.test.ts"],
+        "hasCI": true,
+        "ciEvidence": [".github/workflows/ci.yml"],
+        "hasDocumentation": true,
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": true,
+        "licenseFileFound": true,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    },
+    {
+      "id": 1026,
+      "nodeId": "R_synth_1026",
+      "name": "downstream-custom-fork",
+      "fullName": "synthetic-org/downstream-custom-fork",
+      "owner": {
+        "login": "synthetic-org",
+        "id": 901,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-org/downstream-custom-fork",
+      "description": "Custom fork with verified upstream parent relation",
+      "fork": true,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2026-10-22T00:00:00.000Z",
+      "pushedAt": "2026-10-22T00:00:00.000Z",
+      "sizeKb": 1050,
+      "stargazersCount": 2,
+      "watchersCount": 1,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": "TypeScript",
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": true,
+        "testEvidence": ["tests/it.test.ts"],
+        "hasCI": true,
+        "ciEvidence": [".github/workflows/ci.yml"],
+        "hasDocumentation": true,
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": true,
+        "licenseFileFound": true,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_fork_1026_1025",
+      "source": "1026",
+      "target": "1025",
+      "sourceType": "repository",
+      "targetType": "repository",
+      "type": "fork_of",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Fork comprovado de synthetic-org/upstream-template",
+      "description": "Fork oficial da matriz",
+      "createdAt": "2025-01-01T00:00:00.000Z"
+    }
+  ]
+}

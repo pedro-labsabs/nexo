@@ -1,0 +1,327 @@
+{
+  "scenario": "different_affiliations",
+  "valid": true,
+  "validationErrors": [],
+  "indicators": [
+    {
+      "repositoryId": 1009,
+      "repositoryName": "owned-repo",
+      "overallQualityScore": 85,
+      "indicators": {
+        "testInfrastructure": {
+          "id": "test_infrastructure",
+          "name": "Infraestrutura de Testes",
+          "status": "partial",
+          "score": 70,
+          "summary": "Detectado sinal de teste: tests/it.rs.",
+          "inputs": {
+            "hasTests": true,
+            "evidenceFound": [
+              "tests/it.rs"
+            ],
+            "treeTruncated": false
+          },
+          "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
+          "limitations": [
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando."
+          ]
+        },
+        "ciConfiguration": {
+          "id": "ci_configuration",
+          "name": "Configuração de CI/CD",
+          "status": "passed",
+          "score": 100,
+          "summary": "Fluxos de automação CI configurados: .github/workflows/ci.yml.",
+          "inputs": {
+            "hasCI": true,
+            "ciEvidence": [
+              ".github/workflows/ci.yml"
+            ],
+            "treeTruncated": false
+          },
+          "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
+          "limitations": [
+            "A existência de workflows não assegura que as execuções de CI estejam com status verde no GitHub.",
+            "Sistemas externos de CI (ex: CircleCI externo ou Jenkins sem manifesto no repo) podem não ser identificados."
+          ]
+        },
+        "documentation": {
+          "id": "documentation",
+          "name": "Documentação do Projeto",
+          "status": "passed",
+          "score": 70,
+          "summary": "Escore de documentação: 70/100 (README: Sim, Descrição: Sim).",
+          "inputs": {
+            "hasDescription": true,
+            "readmeFound": true,
+            "contributingFound": false,
+            "licenseFileFound": true,
+            "docEvidence": [],
+            "treeTruncated": false
+          },
+          "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
+          "limitations": [
+            "A presença de README.md não garante completude, clareza ou qualidade da documentação técnica.",
+            "Não avalia compreensão semântica do conteúdo textual."
+          ]
+        },
+        "activityRecency": {
+          "id": "activity_recency",
+          "name": "Recência de Atividade",
+          "status": "passed",
+          "score": 100,
+          "summary": "Atividade muito recente: último push há 12 dias.",
+          "inputs": {
+            "pushedAt": "2026-10-20T00:00:00.000Z",
+            "referenceDate": "2026-11-01T12:00:00.000Z",
+            "daysSinceLastPush": 12
+          },
+          "calculation": "<=30d: 100, <=90d: 80, <=180d: 60, <=365d: 40, >365d: 15.",
+          "limitations": [
+            "A recência de push mede frequência temporal, não produtividade, estabilidade ou valor do código.",
+            "Projetos maduros e estáveis podem ter baixa atividade recente propositalmente."
+          ]
+        },
+        "maintenanceSignals": {
+          "id": "maintenance_signals",
+          "name": "Sinais de Manutenção",
+          "status": "passed",
+          "score": 100,
+          "summary": "Sinais estruturais e operacionais ativos (Branch: main, Issues: 0).",
+          "inputs": {
+            "archived": false,
+            "disabled": false,
+            "openIssuesCount": 0,
+            "sizeKb": 500,
+            "defaultBranch": "main"
+          },
+          "calculation": "Base 80, bônus para branch main (+10) e licença (+10), penalidades para repo vazio ou desativado.",
+          "limitations": [
+            "A quantidade de issues abertas NÃO é prova isolada de baixa qualidade (projetos populares recebem muitas issues).",
+            "Tamanho em KB não reflete a complexidade ou elegância da arquitetura."
+          ]
+        },
+        "overallQualityScore": 85
+      }
+    },
+    {
+      "repositoryId": 1010,
+      "repositoryName": "collab-repo",
+      "overallQualityScore": 68,
+      "indicators": {
+        "testInfrastructure": {
+          "id": "test_infrastructure",
+          "name": "Infraestrutura de Testes",
+          "status": "partial",
+          "score": 70,
+          "summary": "Detectado sinal de teste: tests/test_collab.py.",
+          "inputs": {
+            "hasTests": true,
+            "evidenceFound": [
+              "tests/test_collab.py"
+            ],
+            "treeTruncated": false
+          },
+          "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
+          "limitations": [
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando."
+          ]
+        },
+        "ciConfiguration": {
+          "id": "ci_configuration",
+          "name": "Configuração de CI/CD",
+          "status": "failed",
+          "score": 0,
+          "summary": "Nenhum arquivo de automação CI/CD (.github/workflows, etc.) encontrado.",
+          "inputs": {
+            "hasCI": false,
+            "ciEvidence": [],
+            "treeTruncated": false
+          },
+          "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
+          "limitations": [
+            "A existência de workflows não assegura que as execuções de CI estejam com status verde no GitHub.",
+            "Sistemas externos de CI (ex: CircleCI externo ou Jenkins sem manifesto no repo) podem não ser identificados."
+          ]
+        },
+        "documentation": {
+          "id": "documentation",
+          "name": "Documentação do Projeto",
+          "status": "passed",
+          "score": 80,
+          "summary": "Escore de documentação: 80/100 (README: Sim, Descrição: Sim).",
+          "inputs": {
+            "hasDescription": true,
+            "readmeFound": true,
+            "contributingFound": true,
+            "licenseFileFound": true,
+            "docEvidence": [],
+            "treeTruncated": false
+          },
+          "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
+          "limitations": [
+            "A presença de README.md não garante completude, clareza ou qualidade da documentação técnica.",
+            "Não avalia compreensão semântica do conteúdo textual."
+          ]
+        },
+        "activityRecency": {
+          "id": "activity_recency",
+          "name": "Recência de Atividade",
+          "status": "passed",
+          "score": 100,
+          "summary": "Atividade muito recente: último push há 14 dias.",
+          "inputs": {
+            "pushedAt": "2026-10-18T00:00:00.000Z",
+            "referenceDate": "2026-11-01T12:00:00.000Z",
+            "daysSinceLastPush": 14
+          },
+          "calculation": "<=30d: 100, <=90d: 80, <=180d: 60, <=365d: 40, >365d: 15.",
+          "limitations": [
+            "A recência de push mede frequência temporal, não produtividade, estabilidade ou valor do código.",
+            "Projetos maduros e estáveis podem ter baixa atividade recente propositalmente."
+          ]
+        },
+        "maintenanceSignals": {
+          "id": "maintenance_signals",
+          "name": "Sinais de Manutenção",
+          "status": "passed",
+          "score": 100,
+          "summary": "Sinais estruturais e operacionais ativos (Branch: main, Issues: 2).",
+          "inputs": {
+            "archived": false,
+            "disabled": false,
+            "openIssuesCount": 2,
+            "sizeKb": 800,
+            "defaultBranch": "main"
+          },
+          "calculation": "Base 80, bônus para branch main (+10) e licença (+10), penalidades para repo vazio ou desativado.",
+          "limitations": [
+            "A quantidade de issues abertas NÃO é prova isolada de baixa qualidade (projetos populares recebem muitas issues).",
+            "Tamanho em KB não reflete a complexidade ou elegância da arquitetura."
+          ]
+        },
+        "overallQualityScore": 68
+      }
+    },
+    {
+      "repositoryId": 1011,
+      "repositoryName": "org-member-repo",
+      "overallQualityScore": 100,
+      "indicators": {
+        "testInfrastructure": {
+          "id": "test_infrastructure",
+          "name": "Infraestrutura de Testes",
+          "status": "passed",
+          "score": 100,
+          "summary": "Detectados múltiplos sinais de testes: tests/org.test.ts, vitest.config.ts.",
+          "inputs": {
+            "hasTests": true,
+            "evidenceFound": [
+              "tests/org.test.ts",
+              "vitest.config.ts"
+            ],
+            "treeTruncated": false
+          },
+          "calculation": "Escore de 100 para >=2 evidências, 70 para 1 evidência, 0 para nenhuma.",
+          "limitations": [
+            "A presença de arquivos ou pastas de teste NÃO garante que os testes foram executados ou que estejam passando."
+          ]
+        },
+        "ciConfiguration": {
+          "id": "ci_configuration",
+          "name": "Configuração de CI/CD",
+          "status": "passed",
+          "score": 100,
+          "summary": "Fluxos de automação CI configurados: .github/workflows/test.yml.",
+          "inputs": {
+            "hasCI": true,
+            "ciEvidence": [
+              ".github/workflows/test.yml"
+            ],
+            "treeTruncated": false
+          },
+          "calculation": "Escore de 100 para presença de arquivos de workflow CI detectados, 0 caso contrário.",
+          "limitations": [
+            "A existência de workflows não assegura que as execuções de CI estejam com status verde no GitHub.",
+            "Sistemas externos de CI (ex: CircleCI externo ou Jenkins sem manifesto no repo) podem não ser identificados."
+          ]
+        },
+        "documentation": {
+          "id": "documentation",
+          "name": "Documentação do Projeto",
+          "status": "passed",
+          "score": 100,
+          "summary": "Escore de documentação: 100/100 (README: Sim, Descrição: Sim).",
+          "inputs": {
+            "hasDescription": true,
+            "readmeFound": true,
+            "contributingFound": true,
+            "licenseFileFound": true,
+            "docEvidence": [
+              "docs/spec.md"
+            ],
+            "treeTruncated": false
+          },
+          "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
+          "limitations": [
+            "A presença de README.md não garante completude, clareza ou qualidade da documentação técnica.",
+            "Não avalia compreensão semântica do conteúdo textual."
+          ]
+        },
+        "activityRecency": {
+          "id": "activity_recency",
+          "name": "Recência de Atividade",
+          "status": "passed",
+          "score": 100,
+          "summary": "Atividade muito recente: último push há 10 dias.",
+          "inputs": {
+            "pushedAt": "2026-10-22T00:00:00.000Z",
+            "referenceDate": "2026-11-01T12:00:00.000Z",
+            "daysSinceLastPush": 10
+          },
+          "calculation": "<=30d: 100, <=90d: 80, <=180d: 60, <=365d: 40, >365d: 15.",
+          "limitations": [
+            "A recência de push mede frequência temporal, não produtividade, estabilidade ou valor do código.",
+            "Projetos maduros e estáveis podem ter baixa atividade recente propositalmente."
+          ]
+        },
+        "maintenanceSignals": {
+          "id": "maintenance_signals",
+          "name": "Sinais de Manutenção",
+          "status": "passed",
+          "score": 100,
+          "summary": "Sinais estruturais e operacionais ativos (Branch: main, Issues: 1).",
+          "inputs": {
+            "archived": false,
+            "disabled": false,
+            "openIssuesCount": 1,
+            "sizeKb": 1200,
+            "defaultBranch": "main"
+          },
+          "calculation": "Base 80, bônus para branch main (+10) e licença (+10), penalidades para repo vazio ou desativado.",
+          "limitations": [
+            "A quantidade de issues abertas NÃO é prova isolada de baixa qualidade (projetos populares recebem muitas issues).",
+            "Tamanho em KB não reflete a complexidade ou elegância da arquitetura."
+          ]
+        },
+        "overallQualityScore": 100
+      }
+    }
+  ],
+  "extractedRelationships": [
+    {
+      "id": "rel_belongs_1011_901",
+      "source": "1011",
+      "target": "901",
+      "sourceType": "repository",
+      "targetType": "organization",
+      "type": "belongs_to",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Repositório synthetic-org/org-member-repo pertence à organização synthetic-org",
+      "description": "Membro da organização synthetic-org",
+      "createdAt": "2025-03-01T00:00:00.000Z"
+    }
+  ],
+  "mergedAnnotations": null
+}
