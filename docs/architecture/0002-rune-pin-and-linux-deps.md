@@ -148,35 +148,47 @@ Para garantir a estabilidade do ciclo de vida da aplicação nativa independente
 2. **Validação de Processo Nativo Real com Associação Segura e Protocolo EWMH:**
    - O teste de integração `native_window_process_lifecycle_clean_exit` executa uma verificação real de processo de ponta a ponta com garantias estritas de segurança:
      - **Isolamento de Processo via RAII (`ChildGuard`):** Dispara o binário real compilado `nexo-desktop` (`CARGO_BIN_EXE_nexo-desktop`) como processo filho sob custódia do guard RAII `ChildGuard`. Em caso de qualquer falha, asserção, pânico ou timeout, o `drop` garante que `child.kill()` e `child.wait()` sejam executados imediatamente, eliminando o risco de processos órfãos ou zumbis.
+     - **Tipagem e Detecção de Ambientes Gráficos (`EnvironmentSupport`):**
+       - **X11 / EWMH:** Suporte pleno quando `DISPLAY` está definido e o window manager implementa a especificação EWMH (`_NET_WM_PID`), permitindo enumeração de janelas e encerramento cirúrgico via Window ID (`wmctrl -i -c <window_id>`).
+       - **XWayland:** Camada de compatibilidade X11 sobre compositores Wayland que expõe a variável `DISPLAY` e suporta a ponte EWMH. É suportada plenamente quando ativa e operacional.
+       - **Wayland Puro (`PureWaylandWithoutX11`):** Sessões exclusivas Wayland onde `WAYLAND_DISPLAY` está presente mas `DISPLAY` está ausente ou sem suporte a ponte EWMH. Como o utilitário `wmctrl` opera sobre X11/EWMH, o teste nativo não pode presumir nem inventar janelas; a rotina identifica esse ambiente como `PureWaylandWithoutX11` e emite skip diagnóstico explícito (`SKIPPED`), nunca fechando janelas de terceiros nem emitindo falsa declaração de teste executado.
+       - **Ausência de Servidor Gráfico (`MissingDisplay`):** Ambientes sem `DISPLAY` e sem `WAYLAND_DISPLAY` (ex.: runners de CI headless) são categorizados com skip explícito documentado.
+       - **Ausência ou Falha de Comunicação do `wmctrl`:** Se `wmctrl` não estiver instalado (`MissingWmctrl`) ou se a chamada de sondagem `wmctrl -m` falhar ao se comunicar com o window manager (`WmctrlCommunicationFailed(code)`), o teste emite skip informativo sem mascarar o motivo.
      - **Vinculação Estrita de Janela Exclusivamente por PID (`wmctrl -l -p`):** Elimina categoricamente a correspondência frágil por título de janela. Utiliza o comando `wmctrl -l -p` para obter a propriedade oficial `_NET_WM_PID` mantida pelo window manager. A função `parse_wmctrl_l_p` analisa a listagem bruta em estruturas `WindowInfo` (`id`, `desktop`, `pid`, `host`, `title`), preservando inclusive múltiplos espaços internos no título. A resolução via `find_window_by_pid` associa a janela estritamente ao PID do processo filho (`child.id()`).
      - **Imunidade a Janelas Concorrentes ou Preexistentes:** Se houver outras janelas no ambiente com o título "NEXO" (por exemplo, sessões abertas manualmente pelo desenvolvedor ou instâncias anteriores), o teste ignora-as categoricamente pois seus PIDs não coincidem com o processo sob teste.
      - **Encerramento Cirúrgico por Window ID Hexadecimal (`wmctrl -i -c`):** O encerramento gracioso não utiliza títulos (`wmctrl -c NEXO` foi totalmente abolido). A função `close_window_by_id` despacha a mensagem cliente `_NET_CLOSE_WINDOW` diretamente para o Window ID hexadecimal correspondente (`wmctrl -i -c <window_id>`), afetando exclusivamente a janela alvo.
-     - **Detecção Imediata de Saídas Prematuras:** Durante o polling da janela (intervalo de 100ms até 5s em `poll_child_window`), verifica periodicamente `child.try_wait()`. Se o processo filho sofrer um encerramento inesperado (seja por erro, pânico ou término com código 0) antes de mapear a janela, a rotina falha imediatamente com `LifecycleError::PrematureExit(code)` e descarrega os logs do processo para diagnóstico imediato.
+     - **Tratamento Rigoroso de Códigos de Saída de `wmctrl`:** A chamada `wmctrl` tem seu exit code validado rigorosamente. Na sondagem inicial de ambiente, falhas de comunicação retornam `WmctrlCommunicationFailed(code)`. No loop de polling (`poll_child_window`), se `wmctrl -l -p` falhar ou retornar código diferente de zero, a rotina retorna `WindowBindingError::WmctrlExecutionFailed(code)` propagada para `LifecycleError::WindowBinding(...)`, falhando imediatamente sem mascarar a falha de comunicação como "janela ainda não apareceu" (`PidNotFound`).
+     - **Falhas Reais do Aplicativo e Detecção Imediata de Saídas Prematuras:** Durante o polling da janela (intervalo de 100ms até 5s em `poll_child_window`), verifica periodicamente `child.try_wait()`. Se o processo filho abortar ou sair prematuramente antes de mapear a janela (seja por crash, erro de GPU, pânico ou encerramento inesperado com código 0 ou diferente de zero), o evento é categorizado estritamente como `LifecycleError::PrematureExit(code)` e falha o teste com despejo dos logs capturados do processo, nunca sendo transformado em skip para obter CI artificialmente verde.
      - **Verificação Rigorosa de Código de Saída:** A rotina `wait_for_clean_exit` aguarda o término e valida via `verify_clean_exit` que o processo encerrou com código estritamente `0` (`status.success()`). Códigos diferentes de zero geram `LifecycleError::NonZeroExit(code)` e interrupções por sinal geram `LifecycleError::TerminatedBySignal`.
-     - **Tratamento Seguro de Limitações Ambientais e Ambientes sem EWMH:** Caso o ambiente não suporte a propriedade `_NET_WM_PID` (todas as janelas reportando PID 0) ou se execute sob Wayland puro sem suporte a PID, a rotina sinaliza `WindowBindingError::PidNotSupported` e aborta a verificação com skip informativo (`SKIPPED`), sem interagir com janelas de terceiros e sem emitir falsas declarações de sucesso.
-     - **Bateria de Regressões Automatizadas:** A suíte contém testes unitários e de integração dedicados que garantem cobertura para:
+     - **Tratamento Seguro de Limitações Ambientais e Ambientes sem EWMH:** Caso o ambiente não suporte a propriedade `_NET_WM_PID` (todas as janelas reportando PID 0), a rotina sinaliza `WindowBindingError::PidNotSupported` e aborta a verificação com skip informativo (`SKIPPED`), sem interagir com janelas de terceiros e sem emitir falsas declarações de sucesso.
+     - **Bateria de Regressões Automatizadas:** A suíte contém 20 testes dedicados em `lifecycle_tests.rs` que garantem cobertura para:
        1. `regression_preexisting_nexo_window_is_not_closed`: Comprova que janelas pré-existentes intituladas "NEXO" não são associadas nem fechadas.
        2. `regression_premature_child_exit_triggers_failure`: Comprova detecção e falha imediata em caso de término precoce com código 1 ou 0.
        3. `regression_nonzero_exit_code_triggers_failure`: Comprova rejeição de códigos de saída não-zero.
        4. `regression_child_hang_triggers_timeout_and_clean_kill`: Comprova disparo de timeout em processos em hang e limpeza garantida pelo `ChildGuard`.
        5. `regression_missing_ewmh_or_display_handled_cleanly`: Comprova skip transparente em ambientes sem display, sem `wmctrl` ou sem suporte a `_NET_WM_PID`.
+       6. `regression_wmctrl_execution_failure_is_not_masked_as_pid_not_found`: Comprova que erros de execução do `wmctrl` geram `WmctrlExecutionFailed` e não são mascarados como `PidNotFound`.
+       7. `regression_scenario_1_x11_ewmh_functional_supported` a `regression_scenario_7_clean_exit_by_exact_window_id_and_pid`: Testes exaustivos cobrindo cada cenário ambiental (X11/EWMH suportado, ausência de display, Wayland puro sem X11, falha de wmctrl, saída prematura do filho, preservação de janelas de terceiros e encerramento limpo por Window ID).
 
 ---
 
-## 5. Procedimento de Smoke Test Nativo em Linux (X11 e Wayland)
+## 5. Procedimento de Smoke Test Nativo em Linux (X11, XWayland e Wayland)
 
 Para verificar o ciclo de vida da janela nativa e a resposta a eventos fora do ambiente de CI:
 
 ### Pré-requisitos
-- Sessão gráfica ativa (X11 ou Wayland).
+- Sessão gráfica ativa:
+  - **X11 / EWMH:** Suporte completo com compositor X11 ativo e suporte a `_NET_WM_PID`.
+  - **XWayland:** Sessão Wayland com camada de compatibilidade XWayland ativa (variável `DISPLAY` configurada e funcional).
+  - **Wayland Puro:** Em sessões exclusivas Wayland sem XWayland (`WAYLAND_DISPLAY` presente sem `DISPLAY` ou sem suporte a ponte EWMH), o teste emite skip diagnóstico explícito (`PureWaylandWithoutX11`), pois utilitários baseados em EWMH como `wmctrl` não se comunicam diretamente com compositores Wayland nativos.
 - Driver Vulkan instalado (`mesa-vulkan-drivers` ou driver proprietário).
-- Pacote `wmctrl` (para automação via linha de comando).
+- Pacote `wmctrl` instalado no sistema (para automação via linha de comando sob X11/XWayland).
 
 ### Execução Automatizada do Teste de Ciclo de Vida
 ```bash
 cargo test -p nexo-desktop --test lifecycle_tests -- --nocapture
 ```
-Executa a validação headless (5 iterações completas do runtime), os testes determinísticos do parser de janelas, a bateria completa de regressões de ciclo de vida e, caso detecte sessão gráfica com window manager compatível com EWMH e suporte a `_NET_WM_PID`, abre a janela real, associa unicamente ao PID via `wmctrl -l -p`, despacha encerramento gracioso cirúrgico por Window ID (`wmctrl -i -c <window_id>`) e valida a terminação limpa com código de saída `0`.
+Executa a validação headless (5 iterações completas do runtime), os testes determinísticos do parser de janelas, a bateria completa de 20 testes de ciclo de vida e, caso detecte sessão gráfica com window manager compatível com EWMH e suporte a `_NET_WM_PID`, abre a janela real, associa unicamente ao PID via `wmctrl -l -p`, despacha encerramento gracioso cirúrgico por Window ID (`wmctrl -i -c <window_id>`) e valida a terminação limpa com código de saída `0`.
 
 ### Execução Interativa Manual
 ```bash
@@ -201,11 +213,17 @@ cargo run -p nexo-desktop
    - Feche a janela pelo controle do sistema operacional (botão 'X' da janela) ou feche via sinal SIGINT (`Ctrl+C`).
    - O processo termina imediatamente com código de saída `0`, sem threads zumbis ou vazamentos de recursos.
 
-### Estratégia de CI Headless
-Em runners GitHub Actions (`ubuntu-latest`), onde não há servidor X11 ou GPU física disponível:
-- A suíte automatizada `cargo test --workspace --locked` executa 23 testes determinísticos (18 testes headless de UI/Runtime e 5 testes de regressão de ciclo de vida e binding de janelas).
-- O teste de integração de processo nativo de ponta a ponta avalia as variáveis `DISPLAY`, `WAYLAND_DISPLAY`, a presença do utilitário `wmctrl` e o suporte a `_NET_WM_PID`, efetuando skip transparente e documentado quando os requisitos de desktop estão ausentes, prevenindo falsas alegações de conformidade.
-- A geração de snapshots visuais (`cargo run -p nexo-desktop -- --snap <path>`) valida a árvore de layout, renderização de tipografia e estilo sem necessidade de janela nativa.
+### Estratégia de CI e Contagem de Testes Verificados
+Em runners de integração contínua (como GitHub Actions `ubuntu-latest`), onde não há servidor X11 ou GPU física disponível:
+- **Suíte Nativa Rust:** 36 testes automatizados rigorosamente executados e aprovados via `cargo test --workspace --locked`, compreendendo:
+  - 20 testes em `crates/nexo-desktop/tests/lifecycle_tests.rs` (runtime headless, parser de janelas, binding seguro e bateria de regressões de cenários ambientais).
+  - 9 testes unitários em `crates/nexo-desktop` (estado, temas, layout responsivo e interações de teclado).
+  - 4 testes unitários em `crates/nexo-domain` (modelo de domínio e validações).
+  - 1 teste unitário em `crates/nexo-github` (integração de sincronização).
+  - 2 testes unitários em `crates/nexo-storage` (persistência em memória).
+- **Suíte TypeScript/React:** 30 testes automatizados rigorosamente executados e aprovados via `npm test` (Vitest), cobrindo anotações, relatórios, relações, indicadores, sincronização e componentes de interface web.
+- **Transparência de Diagnóstico em CI:** O teste de integração de processo nativo de ponta a ponta avalia as variáveis `DISPLAY`, `WAYLAND_DISPLAY`, a presença do utilitário `wmctrl` e o suporte a `_NET_WM_PID`. Em runners puramente headless ou sob Wayland puro sem ponte X11, efetua skip transparente e documentado (`MissingDisplay` ou `PureWaylandWithoutX11`), eliminando qualquer risco de falso positivo e garantindo que falhas reais de compilação ou encerramento precoce (`PrematureExit`) causem falha explícita do teste.
+- **Snapshots Visuais Determinísticos:** A geração de snapshots visuais (`cargo run -p nexo-desktop -- --snap <path>`) valida a árvore de layout, renderização de tipografia e estilo sem necessidade de janela nativa ativa.
 
 ---
 
