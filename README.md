@@ -4,7 +4,49 @@ NEXO é uma aplicação local-first desenvolvida em Node.js 22, TypeScript estri
 
 ---
 
-> **Direção futura — reconstrução em Rune/Rust (decisão de 09/11/2026).** Este README descreve a implementação TypeScript/React **atual**. Foi aprovada a reconstrução integral do NEXO como app Linux nativo usando [Rune da Anomaly](https://github.com/anomalyco/rune) e Rust, com o sincronizador Node temporariamente mantido. Leia a [decisão arquitetural](docs/architecture/0001-rune-native-rebuild.md), o [roadmap por marcos e issues integrais](ROADMAP.md) e as [instruções NEXO-only para agentes](AGENTS.md). **A migração ainda não foi implementada.**
+> **Direção futura — reconstrução em Rune/Rust (Milestone M1 / Issue #2).** O NEXO conta agora com uma fundação nativa executável em Rust e [Rune da Anomaly](https://github.com/anomalyco/rune) para Linux. O aplicativo desktop nativo e o workspace Rust coexistem com a suíte TypeScript preservada. Leia a [ADR 0001](docs/architecture/0001-rune-native-rebuild.md), a [ADR 0002 (Fixação do Rune e dependências Linux)](docs/architecture/0002-rune-pin-and-linux-deps.md), o [ROADMAP.md](ROADMAP.md) e as [instruções para agentes](AGENTS.md).
+
+---
+
+## 🦀 Aplicativo Desktop Nativo (Rust + Rune no Linux)
+
+O aplicativo nativo em Rust/Rune oferece uma interface renderizada por GPU via Vulkan/OpenGL sem dependência de Electron, WebView ou Vite.
+
+### Pré-requisitos Linux
+
+```bash
+# Dependências do sistema (Ubuntu/Debian)
+sudo apt-get update && sudo apt-get install -y \
+  libxkbcommon-dev libwayland-dev libxcb1-dev libx11-dev \
+  libxi-dev libxrandr-dev libxcursor-dev libvulkan-dev \
+  mesa-vulkan-drivers libegl1-mesa-dev libgles2-mesa-dev
+
+# Rust 1.99.1 (fixado no rust-toolchain.toml)
+rustup toolchain install 1.99.1 --component clippy rustfmt
+rustup default 1.99.1
+```
+
+### Compilação e Execução
+
+```bash
+# Compilar todo o workspace
+cargo build --workspace
+
+# Executar a aplicação desktop interativa
+cargo run -p nexo-desktop
+
+# Executar smoke test headless (renderiza snapshot PNG sem necessidade de janela gráfica)
+cargo run -p nexo-desktop -- --snap /tmp/nexo-smoke.png --scene default
+
+# Rodar todos os testes automatizados (unitários + headless)
+cargo test --workspace
+
+# Checagens de formatação e linter
+cargo fmt --all -- --check
+cargo clippy --workspace --all-targets -- -D warnings
+```
+
+---
 
 ## 🌟 Recursos Principais
 

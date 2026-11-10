@@ -2,13 +2,63 @@ name: CI
 
 on:
   push:
-    branches: [main, master, 'jules-*']
+    branches: [main, master, 'jules-*', 'recovery/*', 'feat/*']
   pull_request:
-    branches: [main, master]
+    branches: [main, master, 'recovery/*']
 
 jobs:
-  verify:
-    name: Lint, Typecheck, Test, and Build
+  rust:
+    name: Rust (Linux) — fmt, clippy, test, build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxkbcommon-dev \
+            libwayland-dev \
+            libxcb1-dev \
+            libx11-dev \
+            libxi-dev \
+            libxrandr-dev \
+            libxcursor-dev \
+            libvulkan-dev \
+            mesa-vulkan-drivers \
+            libegl1-mesa-dev \
+            libgles2-mesa-dev
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.99.1'
+          components: clippy, rustfmt
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check code formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy linter
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Run automated Rust tests (including Rune headless)
+        run: cargo test --workspace
+
+      - name: Build workspace (locked)
+        run: cargo build --workspace --locked
+
+      - name: Rune desktop headless smoke test
+        run: |
+          cargo run -p nexo-desktop -- --snap /tmp/ci-smoke.png --scene default
+          test -s /tmp/ci-smoke.png
+
+  typescript-legacy:
+    name: TypeScript legacy — lint, typecheck, test, and build
     runs-on: ubuntu-latest
 
     steps:
