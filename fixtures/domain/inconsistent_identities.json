@@ -1,0 +1,91 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "createdAt": "2026-11-01T12:00:00.000Z",
+    "referenceDate": "2026-11-01T12:00:00.000Z",
+    "authenticatedUser": "synthetic-tester",
+    "totalRepositories": 5,
+    "incompleteSync": false,
+    "syncWarnings": []
+  },
+  "organizations": [],
+  "repositories": [
+    {
+      "id": 1033,
+      "nodeId": "R_synth_1033_a",
+      "name": "dup-repo-1",
+      "fullName": "synthetic-tester/dup-repo-1",
+      "owner": {
+        "login": "synthetic-tester",
+        "id": 999,
+        "type": "User"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-tester/dup-repo-1",
+      "description": "First instance of duplicated ID",
+      "fork": false,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2026-10-20T00:00:00.000Z",
+      "pushedAt": "2026-10-20T00:00:00.000Z",
+      "sizeKb": 100,
+      "stargazersCount": 0,
+      "watchersCount": 0,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": null,
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": false,
+        "hasCI": false,
+        "hasDocumentation": false,
+        "readmeFound": false,
+        "contributingFound": false,
+        "licenseFileFound": false,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    },
+    {
+      "id": 1033,
+      "nodeId": "R_synth_1033_b",
+      "name": "dup-repo-2",
+      "fullName": "synthetic-tester/dup-repo-2",
+      "owner": {
+        "login": "synthetic-tester",
+        "id": 999,
+        "type": "User"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-tester/dup-repo-2",
+      "description": "Second instance with identical ID 1033",
+      "fork": false,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2026-10-20T00:00:00.000Z",
+      "pushedAt": "2026-10-20T00:00:00.000Z",
+      "sizeKb": 100,
+      "stargazersCount": 0,
+      "watchersCount": 0,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": null,
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": false,
+        "hasCI": false,
+        "hasDocumentation": false,
+        "readmeFound": false,
+        "contributingFound": false,
+        "licenseFileFound": false,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    }
+  ],
+  "relationships": []
+}

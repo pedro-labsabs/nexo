@@ -33,8 +33,34 @@ pub enum SyncStatus {
 mod tests {
     use super::*;
 
+    struct MockGitHubClient;
+
+    impl GitHubClient for MockGitHubClient {
+        async fn fetch_repository(&self, owner: &str, repo: &str) -> Result<Repository> {
+            Ok(Repository::new(42, repo, format!("{owner}/{repo}")))
+        }
+    }
+
     #[test]
     fn default_sync_status_is_disconnected() {
         assert_eq!(SyncStatus::default(), SyncStatus::Disconnected);
+    }
+
+    #[test]
+    fn mock_client_returns_domain_repository_contract() {
+        let client = MockGitHubClient;
+        let fut = client.fetch_repository("pedro-labsabs", "nex0");
+        let mut pinned = std::pin::pin!(fut);
+        let waker = std::task::Waker::noop();
+        let mut cx = std::task::Context::from_waker(waker);
+        match std::future::Future::poll(pinned.as_mut(), &mut cx) {
+            std::task::Poll::Ready(Ok(repo)) => {
+                assert_eq!(repo.id, 42);
+                assert_eq!(repo.name, "nex0");
+                assert_eq!(repo.full_name, "pedro-labsabs/nex0");
+                assert_eq!(repo.owner.login, "pedro-labsabs");
+            }
+            _ => panic!("Esperado que o mock retorne imediatamente Ready(Ok(repo))"),
+        }
     }
 }

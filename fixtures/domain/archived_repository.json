@@ -1,0 +1,67 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "createdAt": "2026-11-01T12:00:00.000Z",
+    "referenceDate": "2026-11-01T12:00:00.000Z",
+    "authenticatedUser": "synthetic-tester",
+    "totalRepositories": 1,
+    "incompleteSync": false,
+    "syncWarnings": []
+  },
+  "organizations": [
+    {
+      "id": 901,
+      "login": "synthetic-org",
+      "description": "Synthetic testing organization",
+      "repositoryCount": 1
+    }
+  ],
+  "repositories": [
+    {
+      "id": 1004,
+      "nodeId": "R_synth_1004",
+      "name": "legacy-archived-repo",
+      "fullName": "synthetic-org/legacy-archived-repo",
+      "owner": {
+        "login": "synthetic-org",
+        "id": 901,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-org/legacy-archived-repo",
+      "description": "Read-only archived historical project",
+      "fork": false,
+      "createdAt": "2020-01-01T00:00:00.000Z",
+      "updatedAt": "2022-01-01T00:00:00.000Z",
+      "pushedAt": "2022-01-01T00:00:00.000Z",
+      "sizeKb": 5000,
+      "stargazersCount": 15,
+      "watchersCount": 2,
+      "openIssuesCount": 0,
+      "forksCount": 3,
+      "primaryLanguage": "JavaScript",
+      "languages": { "JavaScript": 25000 },
+      "archived": true,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": true,
+        "testEvidence": ["tests/old.test.js"],
+        "hasCI": false,
+        "ciEvidence": [],
+        "hasDocumentation": true,
+        "documentationEvidence": [],
+        "readmeFound": true,
+        "readmePath": "README.md",
+        "contributingFound": false,
+        "licenseFileFound": true,
+        "packageJsonFound": true,
+        "isEmptyRepo": false,
+        "treeTruncated": false,
+        "treeInspected": true
+      }
+    }
+  ],
+  "relationships": []
+}

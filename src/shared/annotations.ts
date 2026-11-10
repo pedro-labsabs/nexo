@@ -168,7 +168,8 @@ export function mergeManualRelationships(
  */
 export function mergeUserAnnotations(
   local: UserAnnotations,
-  incoming: UserAnnotations
+  incoming: UserAnnotations,
+  exportedAtOverride?: string
 ): UserAnnotations {
   const mergedAssessments = mergePotentialAssessments(
     local.potentialAssessments,
@@ -184,7 +185,7 @@ export function mergeUserAnnotations(
 
   return {
     schemaVersion: '1.0',
-    exportedAt: new Date().toISOString(),
+    exportedAt: exportedAtOverride || new Date().toISOString(),
     authenticatedUser: local.authenticatedUser || incoming.authenticatedUser,
     manualRelationships: mergedRelationships,
     deletedRelationships: mergedTombstones,

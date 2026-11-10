@@ -1,0 +1,121 @@
+{
+  "scenario": "truncated_tree",
+  "valid": true,
+  "validationErrors": [],
+  "indicators": [
+    {
+      "repositoryId": 1007,
+      "repositoryName": "huge-truncated-repo",
+      "overallQualityScore": 95,
+      "indicators": {
+        "testInfrastructure": {
+          "id": "test_infrastructure",
+          "name": "Infraestrutura de Testes",
+          "status": "unknown",
+          "score": 0,
+          "summary": "Inspeção parcial: a árvore de arquivos foi truncada pelo GitHub e arquivos de teste podem ter sido omitidos.",
+          "inputs": {
+            "hasTests": false,
+            "treeTruncated": true,
+            "evidenceFound": []
+          },
+          "calculation": "Informação inconclusiva/desconhecida devido a truncamento de árvore.",
+          "limitations": [
+            "A árvore de arquivos ultrapassou o limite do GitHub e foi truncada.",
+            "A ausência de testes não é comprovada; arquivos em diretórios profundos podem existir."
+          ]
+        },
+        "ciConfiguration": {
+          "id": "ci_configuration",
+          "name": "Configuração de CI/CD",
+          "status": "unknown",
+          "score": 0,
+          "summary": "Inspeção parcial: árvore truncada e diretórios de CI podem ter sido omitidos da resposta.",
+          "inputs": {
+            "hasCI": false,
+            "treeTruncated": true
+          },
+          "calculation": "Informação inconclusiva devido ao truncamento da árvore.",
+          "limitations": [
+            "A ausência de fluxos não é comprovada em árvores truncadas pelo GitHub.",
+            "Sistemas externos de CI também podem não ter sido verificados."
+          ]
+        },
+        "documentation": {
+          "id": "documentation",
+          "name": "Documentação do Projeto",
+          "status": "unknown",
+          "score": 20,
+          "summary": "Escore de documentação: 20/100 (README: Não, Descrição: Sim).",
+          "inputs": {
+            "hasDescription": true,
+            "readmeFound": false,
+            "contributingFound": false,
+            "licenseFileFound": false,
+            "docEvidence": [],
+            "treeTruncated": true
+          },
+          "calculation": "README (+40), Descrição (+20), Docs adicionais (+20), CONTRIBUTING (+10), LICENSE (+10).",
+          "limitations": [
+            "A presença de README.md não garante completude, clareza ou qualidade da documentação técnica.",
+            "Não avalia compreensão semântica do conteúdo textual.",
+            "Árvore de arquivos truncada: documentação em subpastas pode ter sido omitida."
+          ]
+        },
+        "activityRecency": {
+          "id": "activity_recency",
+          "name": "Recência de Atividade",
+          "status": "passed",
+          "score": 100,
+          "summary": "Atividade muito recente: último push há 4 dias.",
+          "inputs": {
+            "pushedAt": "2026-10-28T00:00:00.000Z",
+            "referenceDate": "2026-11-01T12:00:00.000Z",
+            "daysSinceLastPush": 4
+          },
+          "calculation": "<=30d: 100, <=90d: 80, <=180d: 60, <=365d: 40, >365d: 15.",
+          "limitations": [
+            "A recência de push mede frequência temporal, não produtividade, estabilidade ou valor do código.",
+            "Projetos maduros e estáveis podem ter baixa atividade recente propositalmente."
+          ]
+        },
+        "maintenanceSignals": {
+          "id": "maintenance_signals",
+          "name": "Sinais de Manutenção",
+          "status": "passed",
+          "score": 90,
+          "summary": "Sinais estruturais e operacionais ativos (Branch: main, Issues: 12).",
+          "inputs": {
+            "archived": false,
+            "disabled": false,
+            "openIssuesCount": 12,
+            "sizeKb": 850000,
+            "defaultBranch": "main"
+          },
+          "calculation": "Base 80, bônus para branch main (+10) e licença (+10), penalidades para repo vazio ou desativado.",
+          "limitations": [
+            "A quantidade de issues abertas NÃO é prova isolada de baixa qualidade (projetos populares recebem muitas issues).",
+            "Tamanho em KB não reflete a complexidade ou elegância da arquitetura."
+          ]
+        },
+        "overallQualityScore": 95
+      }
+    }
+  ],
+  "extractedRelationships": [
+    {
+      "id": "rel_belongs_1007_901",
+      "source": "1007",
+      "target": "901",
+      "sourceType": "repository",
+      "targetType": "organization",
+      "type": "belongs_to",
+      "provenance": "automatic",
+      "verified": true,
+      "evidence": "Repositório synthetic-org/huge-truncated-repo pertence à organização synthetic-org",
+      "description": "Membro da organização synthetic-org",
+      "createdAt": "2023-01-01T00:00:00.000Z"
+    }
+  ],
+  "mergedAnnotations": null
+}

@@ -1,0 +1,11 @@
+{
+  "scenario": "inconsistent_identities",
+  "valid": false,
+  "validationErrors": [
+    "metadata.totalRepositories: total de repositórios diverge do tamanho da lista de repositórios (declarado: 5, encontrado: 2)",
+    "repositories[1].id: ID de repositório duplicado: 1033"
+  ],
+  "indicators": [],
+  "extractedRelationships": [],
+  "mergedAnnotations": null
+}

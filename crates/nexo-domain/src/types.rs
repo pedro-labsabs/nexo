@@ -9,37 +9,6 @@ pub enum ViewMode {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct Repository {
-    pub id: String,
-    pub name: String,
-    pub full_name: String,
-    pub is_private: bool,
-    pub description: Option<String>,
-    pub primary_language: Option<String>,
-    pub stars_count: u32,
-    pub forks_count: u32,
-}
-
-impl Repository {
-    pub fn new(
-        id: impl Into<String>,
-        name: impl Into<String>,
-        full_name: impl Into<String>,
-    ) -> Self {
-        Self {
-            id: id.into(),
-            name: name.into(),
-            full_name: full_name.into(),
-            is_private: false,
-            description: None,
-            primary_language: None,
-            stars_count: 0,
-            forks_count: 0,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct NexoState {
     pub app_version: String,
     pub view_mode: ViewMode,

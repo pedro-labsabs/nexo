@@ -1,0 +1,10 @@
+{
+  "scenario": "invalid_types_and_malformed_dates",
+  "valid": false,
+  "validationErrors": [
+    "repositories.0.id: Expected number, received string"
+  ],
+  "indicators": [],
+  "extractedRelationships": [],
+  "mergedAnnotations": null
+}

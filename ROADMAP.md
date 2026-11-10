@@ -72,5 +72,6 @@ Sem datas artificiais: progredir conforme evidência técnica, conclusão integr
 ## Registro de progresso
 
 - **09/11/2026:** ADR 0001 e PR #1 abertas; roadmap e política NEXO-only definidos; issues **#2 a #9** criadas como pacotes integrais.
-- **Estado de implementação:** nenhum trabalho de código Rust/Rune foi comprovado neste planejamento; todas as issues de implementação exigem execução e aceite futuros.
-- **Milestones nativos GitHub:** M1–M4 criados e abertos; issues associadas: M1 (#2–#3), M2 (#4–#6), M3 (#7–#8) e M4 (#9). Nenhuma issue de implementação concluída.
+- **10/11/2026 (Issue #2 concluída):** Infraestrutura Rust/Rune Linux implementada e verificada (ADR 0002). Pin do Rune upstream (`dev` @ `42f2d35`), toolchain Rust 1.99.1, pacotes de sistema Linux, testes de ciclo de vida e smoke headless em CI.
+- **10/11/2026 (Issue #3 concluída):** Núcleo de domínio Rust (`nexo-domain`) implementado com 100% de paridade funcional e compatibilidade JSON 1.0 (ADR 0003). Modelos de entidades, validação com caminho tipado, 5 indicadores determinísticos com exclusão dinâmica de unknown, relações com proveniência estrita (sem inferência por nomes nem fabricação de fork parents), mesclagem LWW de anotações com tombstones, harness de equivalência entre TypeScript e Rust cobrindo 23 cenários sintéticos e CI com parity check automatizado. Milestone M1 finalizado tecnicamente, liberando M2 (Issue #4).
+- **Milestones nativos GitHub:** M1–M4 criados e abertos; M1 (#2–#3) com implementação e testes concluídos no branch de trabalho; M2 (#4–#6) apto a ser iniciado conforme a ordem de dependências.

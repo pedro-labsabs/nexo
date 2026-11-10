@@ -1,0 +1,66 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "createdAt": "2026-11-01T12:00:00.000Z",
+    "referenceDate": "2026-11-01T12:00:00.000Z",
+    "authenticatedUser": "synthetic-tester",
+    "totalRepositories": 1,
+    "incompleteSync": false,
+    "syncWarnings": []
+  },
+  "organizations": [
+    {
+      "id": 901,
+      "login": "synthetic-org",
+      "description": "Synthetic testing organization",
+      "repositoryCount": 1
+    }
+  ],
+  "repositories": [
+    {
+      "id": 1006,
+      "nodeId": "R_synth_1006",
+      "name": "uninspected-repo",
+      "fullName": "synthetic-org/uninspected-repo",
+      "owner": {
+        "login": "synthetic-org",
+        "id": 901,
+        "type": "Organization"
+      },
+      "isPrivate": false,
+      "htmlUrl": "https://github.com/synthetic-org/uninspected-repo",
+      "description": "Repository whose tree could not be inspected",
+      "fork": false,
+      "createdAt": "2024-05-01T00:00:00.000Z",
+      "updatedAt": "2026-10-15T00:00:00.000Z",
+      "pushedAt": "2026-10-15T00:00:00.000Z",
+      "sizeKb": 300,
+      "stargazersCount": 5,
+      "watchersCount": 1,
+      "openIssuesCount": 0,
+      "forksCount": 0,
+      "primaryLanguage": "Python",
+      "languages": { "Python": 3000 },
+      "archived": false,
+      "disabled": false,
+      "defaultBranch": "main",
+      "affiliation": "owner",
+      "treeSignals": {
+        "hasTests": false,
+        "testEvidence": [],
+        "hasCI": false,
+        "ciEvidence": [],
+        "hasDocumentation": false,
+        "documentationEvidence": [],
+        "readmeFound": false,
+        "contributingFound": false,
+        "licenseFileFound": false,
+        "packageJsonFound": false,
+        "isEmptyRepo": false,
+        "treeTruncated": false,
+        "treeInspected": false
+      }
+    }
+  ],
+  "relationships": []
+}
