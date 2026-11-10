@@ -35,7 +35,12 @@ pub fn view(s: &AppState, _: &mut Cx<AppState>) -> El {
         .font(type_::LABEL)
         .color(t.accent);
 
-    let header_left = row().center().gap(8.0).child(title).child(version_badge);
+    let header_left = row()
+        .key("header_left")
+        .center()
+        .gap(8.0)
+        .child(title)
+        .child(version_badge);
 
     // Botão de alternância de tema
     let theme_label = text(if s.domain.dark_theme {
@@ -68,6 +73,7 @@ pub fn view(s: &AppState, _: &mut Cx<AppState>) -> El {
         .child(theme_label);
 
     let header = row()
+        .key("header")
         .w_full()
         .padding(16.0)
         .fill(t.bg)
@@ -224,6 +230,7 @@ pub fn view(s: &AppState, _: &mut Cx<AppState>) -> El {
     // Exibição de erro com espaçamento adequado se presente
     if let Some(ref err_msg) = s.domain.error_message {
         let err_label = text(format!("⚠️ {}", err_msg))
+            .key("error_banner_text")
             .font(type_::BODY)
             .color(t.destructive);
 
@@ -257,10 +264,12 @@ pub fn view(s: &AppState, _: &mut Cx<AppState>) -> El {
 
     // 4. Rodapé / Status bar com espaçamento garantido
     let status_label = text(&s.status_message)
+        .key("status_message_label")
         .font(type_::LABEL)
         .color(t.text_secondary);
 
     let interactions_label = text(format!("Interações: {}", s.domain.interaction_count))
+        .key("interactions_counter_label")
         .font(type_::LABEL)
         .color(t.text_secondary);
 
@@ -299,7 +308,7 @@ pub fn handle_key(s: &mut AppState, ev: &KeyEvent, _: &mut Tx) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rune::{Env, Key, KeyEvent, Mods, Runtime};
+    use rune::{ElementInfo, Env, Key, KeyEvent, Mods, Runtime};
 
     fn make_test_runtime() -> Runtime<AppState> {
         let env = Env {
@@ -566,6 +575,10 @@ mod tests {
         let resolutions = [(640.0, 480.0), (900.0, 600.0), (1920.0, 1080.0)];
 
         for (w, h) in resolutions {
+            assert!(
+                w > 0.0 && h > 0.0,
+                "dimensões da janela devem ser positivas"
+            );
             let env = Env {
                 system_dark: true,
                 scale: 2.0,
@@ -573,18 +586,166 @@ mod tests {
             let mut rt = Runtime::new(AppState::default(), view, (w, h), env);
             rt.frame(0.0);
 
-            // Verificar posições dos elementos no rodapé (status_bar)
             let elements = rt.elements();
-            let status_bar = elements
-                .iter()
-                .find(|e| e.key.as_deref() == Some("status_bar"))
-                .expect("status_bar not found");
+            let find = |key: &str| -> &ElementInfo {
+                elements
+                    .iter()
+                    .find(|e| e.key.as_deref() == Some(key))
+                    .unwrap_or_else(|| panic!("Element with key '{key}' not found at {w}x{h}"))
+            };
+
+            // 1. Cabeçalho: header_left à esquerda de theme_switch, ambos contidos no header
+            let header = find("header");
+            let header_left = find("header_left");
+            let theme_switch = find("theme_switch");
+
             assert!(
-                status_bar.rect[2] > 0.0,
-                "status_bar deve ter largura positiva em {}x{}",
-                w,
-                h
+                header_left.rect[2] > 0.0,
+                "header_left deve ter largura positiva em {w}x{h}"
             );
+            assert!(
+                theme_switch.rect[2] > 0.0,
+                "theme_switch deve ter largura positiva em {w}x{h}"
+            );
+            assert!(
+                header_left.rect[0] + header_left.rect[2] <= theme_switch.rect[0],
+                "header_left e theme_switch não devem se sobrepor em {w}x{h}: left={:?}, right={:?}",
+                header_left.rect,
+                theme_switch.rect
+            );
+            assert!(
+                header_left.rect[0] >= header.rect[0]
+                    && header_left.rect[0] + header_left.rect[2]
+                        <= header.rect[0] + header.rect[2],
+                "header_left deve estar contido na largura do cabeçalho em {w}x{h}"
+            );
+            assert!(
+                theme_switch.rect[0] >= header.rect[0]
+                    && theme_switch.rect[0] + theme_switch.rect[2]
+                        <= header.rect[0] + header.rect[2],
+                "theme_switch deve estar contido na largura do cabeçalho em {w}x{h}"
+            );
+
+            // 2. Ações Principais: action_btn à esquerda de trigger_error_btn
+            let action_btn = find("action_button");
+            let trigger_error_btn = find("trigger_error_btn");
+            assert!(
+                action_btn.rect[2] > 0.0 && trigger_error_btn.rect[2] > 0.0,
+                "botões de ação devem ter largura positiva em {w}x{h}"
+            );
+            assert!(
+                action_btn.rect[0] + action_btn.rect[2] <= trigger_error_btn.rect[0],
+                "action_button e trigger_error_btn não devem se sobrepor em {w}x{h}: act={:?}, err={:?}",
+                action_btn.rect,
+                trigger_error_btn.rect
+            );
+
+            // 3. Barra de Status: status_label à esquerda de interactions_label, ambos na status_bar
+            let status_bar = find("status_bar");
+            let status_label = find("status_message_label");
+            let interactions_label = find("interactions_counter_label");
+
+            assert!(
+                status_label.rect[2] > 0.0 && interactions_label.rect[2] > 0.0,
+                "labels da status_bar devem ter largura positiva em {w}x{h}"
+            );
+            assert!(
+                status_label.rect[0] + status_label.rect[2] <= interactions_label.rect[0],
+                "status_message_label e interactions_counter_label não devem se sobrepor em {w}x{h}: status={:?}, count={:?}",
+                status_label.rect,
+                interactions_label.rect
+            );
+            assert!(
+                status_label.rect[0] >= status_bar.rect[0]
+                    && status_label.rect[0] + status_label.rect[2]
+                        <= status_bar.rect[0] + status_bar.rect[2],
+                "status_message_label deve estar contido na status_bar em {w}x{h}"
+            );
+            assert!(
+                interactions_label.rect[0] >= status_bar.rect[0]
+                    && interactions_label.rect[0] + interactions_label.rect[2]
+                        <= status_bar.rect[0] + status_bar.rect[2],
+                "interactions_counter_label deve estar contido na status_bar em {w}x{h}"
+            );
+
+            // 4. Usabilidade: botões e abas devem ter largura e altura utilizáveis (width >= 20.0, height >= 20.0)
+            for elem in elements
+                .iter()
+                .filter(|e| e.role == "button" || e.role == "tab")
+            {
+                assert!(
+                    elem.rect[2] >= 20.0,
+                    "elemento interativo {:?} deve ter largura >= 20.0 em {w}x{h}, obtido {}",
+                    elem.key,
+                    elem.rect[2]
+                );
+                assert!(
+                    elem.rect[3] >= 20.0,
+                    "elemento interativo {:?} deve ter altura >= 20.0 em {w}x{h}, obtido {}",
+                    elem.key,
+                    elem.rect[3]
+                );
+            }
+
+            // 5. Estado com erro (error_message.is_some()): banner_error e seus elementos
+            let mut rt_err = Runtime::new(AppState::default(), view, (w, h), env);
+            rt_err.update(|s, _| s.domain.set_error("Erro de layout geométrico"));
+            rt_err.frame(0.0);
+
+            let err_elements = rt_err.elements();
+            let find_err = |key: &str| -> &ElementInfo {
+                err_elements
+                    .iter()
+                    .find(|e| e.key.as_deref() == Some(key))
+                    .unwrap_or_else(|| {
+                        panic!("Element with key '{key}' not found at {w}x{h} com erro")
+                    })
+            };
+
+            let error_banner = find_err("error_banner");
+            let err_label = find_err("error_banner_text");
+            let clear_btn = find_err("clear_error_btn");
+
+            assert!(
+                err_label.rect[2] > 0.0 && clear_btn.rect[2] > 0.0,
+                "elementos do error_banner devem ter largura positiva em {w}x{h}"
+            );
+            assert!(
+                err_label.rect[0] + err_label.rect[2] <= clear_btn.rect[0],
+                "error_banner_text e clear_error_btn não devem se sobrepor em {w}x{h}: text={:?}, btn={:?}",
+                err_label.rect,
+                clear_btn.rect
+            );
+            assert!(
+                err_label.rect[0] >= error_banner.rect[0]
+                    && err_label.rect[0] + err_label.rect[2]
+                        <= error_banner.rect[0] + error_banner.rect[2],
+                "error_banner_text deve estar contido no error_banner em {w}x{h}"
+            );
+            assert!(
+                clear_btn.rect[0] >= error_banner.rect[0]
+                    && clear_btn.rect[0] + clear_btn.rect[2]
+                        <= error_banner.rect[0] + error_banner.rect[2],
+                "clear_error_btn deve estar contido no error_banner em {w}x{h}"
+            );
+
+            for elem in err_elements
+                .iter()
+                .filter(|e| e.role == "button" || e.role == "tab")
+            {
+                assert!(
+                    elem.rect[2] >= 20.0,
+                    "elemento interativo com erro {:?} deve ter largura >= 20.0 em {w}x{h}, obtido {}",
+                    elem.key,
+                    elem.rect[2]
+                );
+                assert!(
+                    elem.rect[3] >= 20.0,
+                    "elemento interativo com erro {:?} deve ter altura >= 20.0 em {w}x{h}, obtido {}",
+                    elem.key,
+                    elem.rect[3]
+                );
+            }
 
             // Renderizar 10 frames sem qualquer erro
             for _ in 0..10 {
