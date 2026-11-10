@@ -14,13 +14,14 @@ pub use annotations::{
 pub use error::{NexoError, Result};
 pub use indicators::{IndicatorDetail, IndicatorStatus, RepositoryIndicators, compute_indicators};
 pub use model::{
-    Affiliation, Organization, OwnerType, RepositoryOwner, Snapshot, SnapshotMetadata, TreeSignals,
+    Affiliation, Organization, OwnerType, Repository, RepositoryOwner, Snapshot, SnapshotMetadata,
+    TreeSignals,
 };
 pub use relations::{
     NodeType, RelationType, Relationship, RelationshipProvenance, RelationshipTombstone,
     extract_explicit_relationships,
 };
-pub use types::{NexoState, Repository, ViewMode};
+pub use types::{NexoState, ViewMode};
 pub use validation::{ValidationErrorDetail, validate_annotations, validate_snapshot};
 
 #[cfg(test)]
@@ -59,7 +60,7 @@ mod tests {
 
     #[test]
     fn repository_creation_and_serde() {
-        let repo = Repository::new("repo-1", "nexo", "pedro-labsabs/nexo");
+        let repo = Repository::new(101, "nexo", "pedro-labsabs/nexo");
         let json = serde_json::to_string(&repo).expect("serialization failed");
         let decoded: Repository = serde_json::from_str(&json).expect("deserialization failed");
         assert_eq!(repo, decoded);

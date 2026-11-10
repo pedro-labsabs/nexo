@@ -126,6 +126,53 @@ pub struct Repository {
     pub indicators: Option<crate::indicators::RepositoryIndicators>,
 }
 
+impl Repository {
+    /// Construtor de conveniência para modelos de teste e integração com valores válidos.
+    pub fn new(id: u64, name: impl Into<String>, full_name: impl Into<String>) -> Self {
+        let name = name.into();
+        let full_name = full_name.into();
+        let owner_login = full_name
+            .split('/')
+            .next()
+            .filter(|s| !s.is_empty())
+            .unwrap_or("owner")
+            .to_string();
+
+        Self {
+            id,
+            node_id: format!("node_{id}"),
+            name: name.clone(),
+            full_name: full_name.clone(),
+            owner: RepositoryOwner {
+                login: owner_login,
+                id: 1,
+                avatar_url: None,
+                type_: OwnerType::User,
+            },
+            is_private: false,
+            html_url: format!("https://github.com/{full_name}"),
+            description: None,
+            fork: false,
+            created_at: "2025-01-01T00:00:00Z".into(),
+            updated_at: "2025-01-01T00:00:00Z".into(),
+            pushed_at: "2025-01-01T00:00:00Z".into(),
+            size_kb: 0,
+            stargazers_count: 0,
+            watchers_count: 0,
+            open_issues_count: 0,
+            forks_count: 0,
+            primary_language: None,
+            languages: BTreeMap::new(),
+            archived: false,
+            disabled: false,
+            default_branch: "main".into(),
+            affiliation: Affiliation::Owner,
+            tree_signals: TreeSignals::default(),
+            indicators: None,
+        }
+    }
+}
+
 /// Snapshot completo contendo metadados, organizações, repositórios, relacionamentos e anotações.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
