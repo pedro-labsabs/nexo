@@ -152,15 +152,8 @@ where
             Err(WindowBindingError::PidNotFound(_)) => {
                 // Continua aguardando a criação e mapeamento da janela
             }
-            Err(WindowBindingError::AmbiguousWindows(ids)) => {
-                eprintln!(
-                    "WARNING: Multiple windows found for PID: {ids:?}. Continuing to poll..."
-                );
-            }
-            Err(WindowBindingError::PidNotSupported) => {
-                return Err(LifecycleError::WindowBinding(
-                    WindowBindingError::PidNotSupported,
-                ));
+            Err(err) => {
+                return Err(LifecycleError::WindowBinding(err));
             }
         }
 
@@ -301,7 +294,11 @@ fn native_window_process_lifecycle_clean_exit() {
         let out = Command::new("wmctrl")
             .args(["-l", "-p"])
             .output()
-            .map_err(|_| WindowBindingError::PidNotFound(child_pid))?;
+            .map_err(|_| WindowBindingError::WmctrlExecutionFailed(-1))?;
+        if !out.status.success() {
+            let code = out.status.code().unwrap_or(-1);
+            return Err(WindowBindingError::WmctrlExecutionFailed(code));
+        }
         let stdout_str = String::from_utf8_lossy(&out.stdout);
         let windows = parse_wmctrl_l_p(&stdout_str);
         find_window_by_pid(&windows, child_pid)
@@ -412,8 +409,9 @@ pub struct WindowInfo {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WindowBindingError {
     PidNotFound(u32),
-    PidNotSupported,
     AmbiguousWindows(Vec<String>),
+    PidNotSupported,
+    WmctrlExecutionFailed(i32),
 }
 
 impl std::fmt::Display for WindowBindingError {
@@ -430,6 +428,9 @@ impl std::fmt::Display for WindowBindingError {
             }
             WindowBindingError::AmbiguousWindows(ids) => {
                 write!(f, "Múltiplas janelas encontradas para o mesmo PID: {ids:?}")
+            }
+            WindowBindingError::WmctrlExecutionFailed(code) => {
+                write!(f, "Falha na execução do utilitário wmctrl (código: {code})")
             }
         }
     }
@@ -939,3 +940,28 @@ fn regression_missing_ewmh_or_display_handled_cleanly() {
         "Lista vazia de janelas não pode associar nenhuma janela nem declarar sucesso"
     );
 }
+
+#[test]
+fn regression_wmctrl_execution_failure_is_not_masked_as_pid_not_found() {
+    let child = Command::new("sleep")
+        .arg("10")
+        .spawn()
+        .expect("Failed to spawn process");
+    let mut guard = ChildGuard(Some(child));
+
+    let fetch_with_failing_wmctrl = || Err(WindowBindingError::WmctrlExecutionFailed(1));
+
+    let result = poll_child_window(
+        guard.0.as_mut().unwrap(),
+        Duration::from_millis(500),
+        Duration::from_millis(20),
+        fetch_with_failing_wmctrl,
+    );
+
+    assert_eq!(
+        result,
+        Err(LifecycleError::WindowBinding(WindowBindingError::WmctrlExecutionFailed(1))),
+        "Falha na comunicação com wmctrl deve abortar imediatamente com erro tipado, nunca ser mascarada como PidNotFound"
+    );
+}
+
