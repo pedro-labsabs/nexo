@@ -205,3 +205,265 @@ fn native_window_process_lifecycle_clean_exit() {
         );
     }
 }
+
+// ============================================================================
+// Módulo de Parsing e Associação Determinística de Janelas por PID (Task 1)
+// ============================================================================
+
+/// Informações estruturadas de uma janela retornada por `wmctrl -l -p`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WindowInfo {
+    pub id: String,
+    pub desktop: i32,
+    pub pid: u32,
+    pub host: String,
+    pub title: String,
+}
+
+/// Erros tipados para associação de janelas ao processo alvo via EWMH / PID.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WindowBindingError {
+    PidNotFound(u32),
+    PidNotSupported,
+    AmbiguousWindows(Vec<String>),
+}
+
+impl std::fmt::Display for WindowBindingError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            WindowBindingError::PidNotFound(pid) => {
+                write!(f, "Nenhuma janela encontrada para o PID {pid}")
+            }
+            WindowBindingError::PidNotSupported => {
+                write!(
+                    f,
+                    "Window manager não suporta ou não reportou _NET_WM_PID (PID 0)"
+                )
+            }
+            WindowBindingError::AmbiguousWindows(ids) => {
+                write!(f, "Múltiplas janelas encontradas para o mesmo PID: {ids:?}")
+            }
+        }
+    }
+}
+
+impl std::error::Error for WindowBindingError {}
+
+/// Realiza o parsing determinístico da saída do comando `wmctrl -l -p`.
+pub fn parse_wmctrl_l_p(output: &str) -> Vec<WindowInfo> {
+    let mut windows = Vec::new();
+    for line in output.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+
+        let mut token_ranges = Vec::with_capacity(4);
+        let mut in_token = false;
+        let mut token_start = 0;
+        let mut end_of_host = 0;
+
+        for (i, c) in line.char_indices() {
+            if c.is_whitespace() {
+                if in_token {
+                    token_ranges.push((token_start, i));
+                    in_token = false;
+                    if token_ranges.len() == 4 {
+                        end_of_host = i;
+                        break;
+                    }
+                }
+            } else if !in_token {
+                token_start = i;
+                in_token = true;
+            }
+        }
+
+        if in_token && token_ranges.len() < 4 {
+            token_ranges.push((token_start, line.len()));
+            if token_ranges.len() == 4 {
+                end_of_host = line.len();
+            }
+        }
+
+        if token_ranges.len() < 4 {
+            continue;
+        }
+
+        let id = line[token_ranges[0].0..token_ranges[0].1].to_string();
+        let desktop = match line[token_ranges[1].0..token_ranges[1].1].parse::<i32>() {
+            Ok(d) => d,
+            Err(_) => continue,
+        };
+        let pid = match line[token_ranges[2].0..token_ranges[2].1].parse::<u32>() {
+            Ok(p) => p,
+            Err(_) => continue,
+        };
+        let host = line[token_ranges[3].0..token_ranges[3].1].to_string();
+
+        let raw_title = if end_of_host < line.len() {
+            &line[end_of_host..]
+        } else {
+            ""
+        };
+        let title = raw_title.trim_start().to_string();
+
+        windows.push(WindowInfo {
+            id,
+            desktop,
+            pid,
+            host,
+            title,
+        });
+    }
+    windows
+}
+
+/// Encontra de forma inequívoca uma janela pertencente ao PID especificado.
+pub fn find_window_by_pid(
+    windows: &[WindowInfo],
+    target_pid: u32,
+) -> Result<WindowInfo, WindowBindingError> {
+    if target_pid == 0 {
+        return Err(WindowBindingError::PidNotSupported);
+    }
+
+    let matching: Vec<&WindowInfo> = windows.iter().filter(|w| w.pid == target_pid).collect();
+
+    if matching.is_empty() {
+        if !windows.is_empty() && windows.iter().all(|w| w.pid == 0) {
+            return Err(WindowBindingError::PidNotSupported);
+        }
+        return Err(WindowBindingError::PidNotFound(target_pid));
+    }
+
+    if matching.len() > 1 {
+        return Err(WindowBindingError::AmbiguousWindows(
+            matching.iter().map(|w| w.id.clone()).collect(),
+        ));
+    }
+
+    Ok(matching[0].clone())
+}
+
+#[cfg(test)]
+mod window_locator_tests {
+    use super::*;
+
+    #[test]
+    fn parse_wmctrl_l_p_valid_lines() {
+        let raw = "\
+0x04000003  0 12345 myhost Terminal\n\
+0x04200002  1 12346 myhost NEXO   Rune   Application   Title\n\
+0x04200005 -1 0     myhost Desktop Window\n\
+";
+        let windows = parse_wmctrl_l_p(raw);
+        assert_eq!(windows.len(), 3);
+
+        assert_eq!(windows[0].id, "0x04000003");
+        assert_eq!(windows[0].desktop, 0);
+        assert_eq!(windows[0].pid, 12345);
+        assert_eq!(windows[0].host, "myhost");
+        assert_eq!(windows[0].title, "Terminal");
+
+        assert_eq!(windows[1].id, "0x04200002");
+        assert_eq!(windows[1].desktop, 1);
+        assert_eq!(windows[1].pid, 12346);
+        assert_eq!(windows[1].host, "myhost");
+        assert_eq!(
+            windows[1].title, "NEXO   Rune   Application   Title",
+            "Múltiplos espaços internos no título da janela devem ser preservados"
+        );
+
+        assert_eq!(windows[2].id, "0x04200005");
+        assert_eq!(windows[2].desktop, -1);
+        assert_eq!(windows[2].pid, 0);
+        assert_eq!(windows[2].host, "myhost");
+        assert_eq!(windows[2].title, "Desktop Window");
+    }
+
+    #[test]
+    fn find_window_by_pid_ignores_preexisting_window_with_same_title() {
+        let windows = vec![
+            WindowInfo {
+                id: "0x01".to_string(),
+                desktop: 0,
+                pid: 1111,
+                host: "host".to_string(),
+                title: "NEXO".to_string(),
+            },
+            WindowInfo {
+                id: "0x02".to_string(),
+                desktop: 0,
+                pid: 2222,
+                host: "host".to_string(),
+                title: "NEXO".to_string(),
+            },
+        ];
+
+        let found = find_window_by_pid(&windows, 2222).expect("Must find window for PID 2222");
+        assert_eq!(found.id, "0x02");
+        assert_eq!(found.pid, 2222);
+    }
+
+    #[test]
+    fn find_window_by_pid_returns_not_found_when_no_match() {
+        let windows = vec![WindowInfo {
+            id: "0x01".to_string(),
+            desktop: 0,
+            pid: 1111,
+            host: "host".to_string(),
+            title: "NEXO".to_string(),
+        }];
+
+        let res = find_window_by_pid(&windows, 2222);
+        assert_eq!(res, Err(WindowBindingError::PidNotFound(2222)));
+    }
+
+    #[test]
+    fn find_window_by_pid_rejects_zero_pid() {
+        // Caso 1: consulta direta por PID 0 é rejeitada como não suportada
+        let windows = vec![WindowInfo {
+            id: "0x01".to_string(),
+            desktop: 0,
+            pid: 0,
+            host: "host".to_string(),
+            title: "NEXO".to_string(),
+        }];
+        let res_zero = find_window_by_pid(&windows, 0);
+        assert_eq!(res_zero, Err(WindowBindingError::PidNotSupported));
+
+        // Caso 2: todas as janelas reportam PID 0 (falta de suporte EWMH / _NET_WM_PID)
+        let res_unsupported = find_window_by_pid(&windows, 2222);
+        assert_eq!(res_unsupported, Err(WindowBindingError::PidNotSupported));
+    }
+
+    #[test]
+    fn find_window_by_pid_detects_ambiguous_windows() {
+        let windows = vec![
+            WindowInfo {
+                id: "0x01".to_string(),
+                desktop: 0,
+                pid: 2222,
+                host: "host".to_string(),
+                title: "NEXO Main".to_string(),
+            },
+            WindowInfo {
+                id: "0x02".to_string(),
+                desktop: 0,
+                pid: 2222,
+                host: "host".to_string(),
+                title: "NEXO Secondary".to_string(),
+            },
+        ];
+
+        let res = find_window_by_pid(&windows, 2222);
+        assert_eq!(
+            res,
+            Err(WindowBindingError::AmbiguousWindows(vec![
+                "0x01".to_string(),
+                "0x02".to_string()
+            ]))
+        );
+    }
+}
