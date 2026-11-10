@@ -104,13 +104,13 @@ fn native_window_process_lifecycle_clean_exit() {
     let mut window_found = false;
     while start.elapsed() < timeout {
         // Verifica se o processo filho terminou prematuramente com erro
-        if let Some(child) = guard.0.as_mut() {
-            if let Ok(Some(status)) = child.try_wait() {
-                panic!(
-                    "Child process exited unexpectedly early with status: {:?}",
-                    status
-                );
-            }
+        if let Some(child) = guard.0.as_mut()
+            && let Ok(Some(status)) = child.try_wait()
+        {
+            panic!(
+                "Child process exited unexpectedly early with status: {:?}",
+                status
+            );
         }
 
         let output = Command::new("wmctrl").arg("-l").output();
