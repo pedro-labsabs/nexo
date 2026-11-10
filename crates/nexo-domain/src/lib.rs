@@ -4,6 +4,7 @@ pub mod indicators;
 pub mod model;
 pub mod relations;
 pub mod types;
+pub mod validation;
 
 pub use annotations::{
     CommercialPotential, PotentialAssessment, StrategicValue, UserAnnotations,
@@ -20,6 +21,7 @@ pub use relations::{
     extract_explicit_relationships,
 };
 pub use types::{NexoState, Repository, ViewMode};
+pub use validation::{ValidationErrorDetail, validate_annotations, validate_snapshot};
 
 #[cfg(test)]
 mod tests {
