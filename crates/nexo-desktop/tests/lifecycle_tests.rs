@@ -50,29 +50,45 @@ fn native_runtime_lifecycle_repeated_init_render_and_clean_drop() {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum EnvironmentSupport {
     Supported,
     MissingDisplay,
+    PureWaylandWithoutX11,
     MissingWmctrl,
+    WmctrlCommunicationFailed(i32),
 }
 
 /// Avalia se o ambiente possui os pré-requisitos necessários para execução
-/// do teste de janela gráfica nativa (display server e utilitário wmctrl).
-pub fn check_environment_support(
+/// do teste de janela gráfica nativa (display server e utilitário wmctrl funcional).
+pub fn check_environment_support<F>(
     display_var: Option<&str>,
     wayland_var: Option<&str>,
     has_wmctrl: bool,
-) -> EnvironmentSupport {
-    let has_display = display_var.map(|v| !v.trim().is_empty()).unwrap_or(false)
-        || wayland_var.map(|v| !v.trim().is_empty()).unwrap_or(false);
-    if !has_display {
+    probe_wmctrl: F,
+) -> EnvironmentSupport
+where
+    F: FnOnce() -> Result<(), i32>,
+{
+    let has_x11 = display_var.map(|v| !v.trim().is_empty()).unwrap_or(false);
+    let has_wayland = wayland_var.map(|v| !v.trim().is_empty()).unwrap_or(false);
+
+    if !has_x11 && !has_wayland {
         return EnvironmentSupport::MissingDisplay;
     }
+
+    if !has_x11 && has_wayland {
+        return EnvironmentSupport::PureWaylandWithoutX11;
+    }
+
     if !has_wmctrl {
         return EnvironmentSupport::MissingWmctrl;
     }
-    EnvironmentSupport::Supported
+
+    match probe_wmctrl() {
+        Ok(()) => EnvironmentSupport::Supported,
+        Err(code) => EnvironmentSupport::WmctrlCommunicationFailed(code),
+    }
 }
 
 /// Erros tipados durante o ciclo de vida e monitoramento do processo filho.
@@ -211,19 +227,49 @@ pub fn wait_for_clean_exit(
 /// o teste documenta explicitamente o skip para evitar falsas asserções de verificação.
 #[test]
 fn native_window_process_lifecycle_clean_exit() {
-    let has_display = std::env::var("DISPLAY").ok();
-    let has_wayland = std::env::var("WAYLAND_DISPLAY").ok();
+    let display_env = std::env::var("DISPLAY").ok();
+    let wayland_env = std::env::var("WAYLAND_DISPLAY").ok();
     let has_wmctrl = Command::new("which")
         .arg("wmctrl")
         .output()
         .map(|o| o.status.success())
         .unwrap_or(false);
 
-    match check_environment_support(has_display.as_deref(), has_wayland.as_deref(), has_wmctrl) {
-        EnvironmentSupport::Supported => {}
-        EnvironmentSupport::MissingDisplay | EnvironmentSupport::MissingWmctrl => {
+    let env_support = check_environment_support(
+        display_env.as_deref(),
+        wayland_env.as_deref(),
+        has_wmctrl,
+        || {
+            let probe = Command::new("wmctrl").arg("-m").output().map_err(|_| -1)?;
+            if probe.status.success() {
+                Ok(())
+            } else {
+                Err(probe.status.code().unwrap_or(-1))
+            }
+        },
+    );
+
+    match env_support {
+        EnvironmentSupport::Supported => {
+            // Prossegue com a inicialização e verificação nativa
+        }
+        EnvironmentSupport::MissingDisplay => {
+            eprintln!("SKIPPED: Nenhum display gráfico detectado (DISPLAY e WAYLAND_DISPLAY ausentes).");
+            return;
+        }
+        EnvironmentSupport::PureWaylandWithoutX11 => {
             eprintln!(
-                "SKIPPED: native window verification requires a graphical display server (DISPLAY or WAYLAND_DISPLAY) with an EWMH-compatible window manager and wmctrl. Skipping window lifecycle test in headless environment."
+                "SKIPPED: Sessão Wayland pura sem ponte X11/XWayland (DISPLAY ausente). O utilitário wmctrl opera sob X11/EWMH."
+            );
+            return;
+        }
+        EnvironmentSupport::MissingWmctrl => {
+            eprintln!("SKIPPED: Utilitário wmctrl não está instalado no sistema.");
+            return;
+        }
+        EnvironmentSupport::WmctrlCommunicationFailed(code) => {
+            eprintln!(
+                "SKIPPED: wmctrl falhou ao se comunicar com o window manager X11 (código {code})."
             );
             return;
         }
@@ -812,27 +858,51 @@ fn regression_child_hang_triggers_timeout_and_clean_kill() {
 fn regression_missing_ewmh_or_display_handled_cleanly() {
     // 1. Ausência de DISPLAY ou WAYLAND_DISPLAY (headless puro)
     assert_eq!(
-        check_environment_support(None, None, true),
+        check_environment_support(None, None, true, || Ok(())),
         EnvironmentSupport::MissingDisplay
     );
     assert_eq!(
-        check_environment_support(Some(""), Some(""), true),
+        check_environment_support(Some(""), Some(""), true, || Ok(())),
         EnvironmentSupport::MissingDisplay
     );
 
-    // 2. Servidor gráfico presente, mas wmctrl ausente
+    // 2. Pure Wayland sem X11 (DISPLAY ausente ou vazio, WAYLAND presente)
     assert_eq!(
-        check_environment_support(Some(":0"), None, false),
+        check_environment_support(None, Some("wayland-0"), true, || Ok(())),
+        EnvironmentSupport::PureWaylandWithoutX11
+    );
+    assert_eq!(
+        check_environment_support(Some(""), Some("wayland-0"), true, || Ok(())),
+        EnvironmentSupport::PureWaylandWithoutX11
+    );
+
+    // 3. X11 presente, mas wmctrl ausente
+    assert_eq!(
+        check_environment_support(Some(":0"), None, false, || Ok(())),
         EnvironmentSupport::MissingWmctrl
     );
     assert_eq!(
-        check_environment_support(None, Some("wayland-0"), false),
+        check_environment_support(Some(":0"), Some("wayland-0"), false, || Ok(())),
         EnvironmentSupport::MissingWmctrl
     );
 
-    // 3. Suporte completo presente
+    // 4. wmctrl presente mas probe de comunicação falha
     assert_eq!(
-        check_environment_support(Some(":0"), None, true),
+        check_environment_support(Some(":0"), None, true, || Err(1)),
+        EnvironmentSupport::WmctrlCommunicationFailed(1)
+    );
+    assert_eq!(
+        check_environment_support(Some(":0"), None, true, || Err(-1)),
+        EnvironmentSupport::WmctrlCommunicationFailed(-1)
+    );
+
+    // 5. Suporte completo presente (X11 presente, wmctrl presente, probe bem-sucedido)
+    assert_eq!(
+        check_environment_support(Some(":0"), None, true, || Ok(())),
+        EnvironmentSupport::Supported
+    );
+    assert_eq!(
+        check_environment_support(Some(":0"), Some("wayland-0"), true, || Ok(())),
         EnvironmentSupport::Supported
     );
 
