@@ -615,8 +615,7 @@ mod tests {
             );
             assert!(
                 header_left.rect[0] >= header.rect[0]
-                    && header_left.rect[0] + header_left.rect[2]
-                        <= header.rect[0] + header.rect[2],
+                    && header_left.rect[0] + header_left.rect[2] <= header.rect[0] + header.rect[2],
                 "header_left deve estar contido na largura do cabeçalho em {w}x{h}"
             );
             assert!(
