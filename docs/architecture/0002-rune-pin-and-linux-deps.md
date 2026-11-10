@@ -58,7 +58,8 @@ O Rune utiliza GPU rendering baseado no `wgpu` v30 (Vulkan em Linux nativo, com 
 
 ## 4. Investigação Técnica: Erro Intermitente no wgpu 30.0.1 (`UnsupportedQueueFamily`)
 
-Durante a auditoria de execução em sessão gráfica Linux X11, foi identificado o seguinte erro intermitente de validação:
+### 4.1. Ocorrência Observada no Linux (X11)
+Durante a auditoria de execução em sessão gráfica Linux X11 em hardware específico, observou-se a seguinte mensagem intermitente de validação emitida pela stack do wgpu:
 
 ```text
 wgpu error: Validation Error
@@ -67,59 +68,92 @@ In Surface::configure
 Surface does not support the adapter's queue family
 ```
 
-### Análise de Causa-Raiz no Código Upstream
+A ocorrência manifestou-se de forma esporádica durante a etapa de inicialização da janela nativa do Rune, sem produzir corrupção de memória ou pânico na aplicação NEXO, mas impedindo a apresentação do primeiro frame da janela naquela sessão específica.
 
-A inspeção do código-fonte do `wgpu` (v30.0.1) e do `rune` (SHA `42f2d354`) revelou:
+### 4.2. Comportamento Demonstrado pelo Código Upstream (`wgpu-core` 30.0.1 e `rune` `42f2d35`)
+A inspeção detalhada do código-fonte upstream evidencia os seguintes comportamentos e invariantes formais:
 
-1. **Localização no wgpu:** Em `wgpu-core/src/device/resource.rs:5277`, durante `Surface::configure`, o wgpu executa:
+1. **No `wgpu-core` (v30.0.1) — `wgpu-core/src/device/resource.rs:5277`:**
+   Durante a execução de `Surface::configure`:
    ```rust
    let caps = surface.get_capabilities(&self.adapter)
        .map_err(|_| E::UnsupportedQueueFamily)?;
    ```
-   Se a consulta de capacidades do adaptador falhar para aquela superfície específica, a validação é abortada com `UnsupportedQueueFamily` ("Surface does not support the adapter's queue family").
+   O `wgpu-core` consulta as capacidades de apresentação da superfície (`surface.get_capabilities`) passando a referência da fila/adaptador selecionado (`&self.adapter`). Se a chamada subjacente ao driver gráfico nativo (como `vkGetPhysicalDeviceSurfaceSupportKHR` no backend Vulkan) falhar ou retornar que a fila de comandos não suporta apresentação direta para aquela superfície X11/Wayland, o `wgpu-core` mapeia o erro exclusivamente como `UnsupportedQueueFamily` ("Surface does not support the adapter's queue family").
 
-2. **Localização no Rune:** Em `crates/rune/src/window/create.rs:145`:
+2. **No `rune` (SHA `42f2d3543f5e076a67736f0cb7dcb2182e8eb4b9`) — `crates/rune/src/window/create.rs:145`:**
    ```rust
    surface.configure(&gpu.device, &config);
    ```
-   O Rune possui uma rotina assíncrona de pré-aquecimento de GPU (`prewarm_gpu()`), que invoca `Gpu::try_for_display(&event_loop)` em background antes mesmo da janela nativa ser instanciada. Posteriormente, ao criar a janela, invoca `Gpu::for_surface(..., &window)`.
+   O Rune inclui uma rotina assíncrona de pré-aquecimento de GPU (`prewarm_gpu()`), que invoca `Gpu::try_for_display(&event_loop)` em background antes mesmo da criação da janela nativa. Posteriormente, ao instanciar a janela, chama `Gpu::for_surface(..., &window)`.
 
-### Fatos Comprovados pelo Código vs. Hipótese de Runtime
+3. **Fatos Irrefutáveis Comprovados pelo Código:**
+   - O wgpu exige estritamente que a fila de comandos (queue family) do adaptador físico selecionado suporte a apresentação direta para a superfície da janela na conexão de display ativa.
+   - A falha não decorre de corrupção de memória, referências inválidas ou pânicos na camada de UI da aplicação NEXO, mas sim da recusa formal da API Vulkan/wgpu durante `Surface::configure`.
+   - O Rune delega a enumeração e a seleção de adaptadores à implementação padrão do wgpu (`Instance::request_adapter`), sem filtros customizados no código da aplicação.
 
-- **Fatos Comprovados pelo Código:**
-  - O wgpu exige estritamente que a fila de comandos (queue family) do adaptador físico selecionado suporte a apresentação direta para a superfície da janela na conexão de display ativa.
-  - O Rune tenta selecionar e pré-aquecer o adaptador preferencial de GPU antes da criação da superfície.
-  - A falha não decorre de corrupção de memória ou panic na UI do NEXO, mas sim da recusa estrita da API Vulkan/wgpu durante `Surface::configure`.
+### 4.3. Hipótese de Runtime Não Comprovada (Sistemas Multi-GPU / PRIME Offload)
+- **Status:** *Hipótese de runtime não comprovada por telemetria ambiental direta.*
+- **Descrição da Hipótese:**
+  - Foi levantada a tese de que, em ambientes Linux com múltiplos adaptadores gráficos (ex.: notebooks com GPU integrada Intel/AMD e GPU discreta NVIDIA via PRIME offload, ou estações com drivers Mesa e proprietários concorrentes), o pré-aquecimento do Rune ou a enumeração de adaptadores do wgpu poderia selecionar um adaptador secundário diferente daquele que gerencia a tela e o visual X11 ativo.
+  - Como consequência, a consulta de capacidades Vulkan (`vkGetPhysicalDeviceSurfaceSupportKHR`) retornaria `false` para o adaptador selecionado em relação à superfície da janela.
+- **Rigor Técnico e Delimitação:**
+  - Esta hipótese **não possui evidência ambiental comprovada** no ambiente de desenvolvimento local nem nos logs de execução do projeto.
+  - Não foram constatados múltiplos adaptadores ativos divergentes nem logs do driver confirmando rejeição por PRIME no hardware de teste.
+  - Portanto, a documentação delimita expressamente essa teoria como hipótese não confirmada, sendo inadequado declarar causa-raiz comprovada sem evidência correspondente, ou modificar arbitrariamente o upstream Rune nem alterar seu SHA fixado para mitigar uma suposição.
 
-- **Hipótese de Runtime (Causa Real no Linux X11):**
-  - Em ambientes Linux com múltiplos adaptadores gráficos (ex.: laptop com GPU integrada Intel/AMD e GPU discreta NVIDIA via PRIME offload, ou estações com drivers Mesa e proprietários concorrentes), o pré-aquecimento do Rune ou a enumeração de adaptadores do wgpu pode selecionar um adaptador diferente do que gerencia o visual e a tela X11 corrente.
-  - Em servidores X11 com aceleração indireta ou extensões DRI3 inconsistentes entre adaptadores, a consulta de capacidades Vulkan (`vkGetPhysicalDeviceSurfaceSupportKHR`) retorna `false` para o adaptador selecionado, impedindo a configuração da superfície.
+### 4.4. Alternativas Diagnósticas e de Contorno Realmente Disponíveis
+O Rune e o wgpu disponibilizam variáveis de ambiente oficiais para diagnosticar e controlar a seleção de GPU em tempo de execução:
 
-### Mitigações Determinísticas e Controles de Diagnóstico
-
-O Rune e o wgpu disponibilizam controles de ambiente para forçar o adaptador e depurar a seleção:
-
-1. **Forçar Adaptador Específico:**
+1. **Forçar Adaptador Específico (`WGPU_ADAPTER_NAME`):**
+   Restringe o adaptador gráfico inspecionado por correspondência de nome:
    ```bash
    # Selecionar adaptador integrado ou discreto pelo nome
    WGPU_ADAPTER_NAME="Intel" cargo run -p nexo-desktop
    # ou
    WGPU_ADAPTER_NAME="NVIDIA" cargo run -p nexo-desktop
+   # ou
+   WGPU_ADAPTER_NAME="AMD" cargo run -p nexo-desktop
    ```
-2. **Forçar Preferência de Consumo:**
+2. **Forçar Preferência de Consumo (`WGPU_POWER_PREF`):**
+   Orienta o wgpu na escolha entre eficiência energética e desempenho gráfico:
    ```bash
    WGPU_POWER_PREF=low cargo run -p nexo-desktop   # Favorece GPU integrada
    WGPU_POWER_PREF=high cargo run -p nexo-desktop  # Favorece GPU discreta
    ```
-3. **Diagnóstico Completo de GPU no Rune:**
+3. **Diagnóstico Completo de GPU no Rune (`RUNE_GPU_LOG`):**
+   Ativa o logging interno do Rune para enumeração e seleção de pipeline:
    ```bash
    RUNE_GPU_LOG=1 cargo run -p nexo-desktop
    ```
-   Exibe os adaptadores encontrados, driver Vulkan/GL ativo e a cadeia de configuração do pipeline gráfico.
-4. **Fallback Seguro em Ambientes Virtuais ou Sem Aceleração de Hardware:**
+   Exibe os adaptadores encontrados, driver Vulkan/GL ativo e cada etapa de configuração do pipeline gráfico.
+4. **Fallback Seguro para Renderização em Software (`LIBGL_ALWAYS_SOFTWARE`):**
+   Permite execução em ambientes virtuais, contêineres ou estações sem aceleração gráfica física por hardware:
    ```bash
    LIBGL_ALWAYS_SOFTWARE=1 cargo run -p nexo-desktop
    ```
+
+### 4.5. Comportamentos Ainda Não Reproduzidos Sinteticamente
+Registra-se com total clareza e transparência os comportamentos que **ainda não foram reproduzidos de forma determinística**:
+- O erro `UnsupportedQueueFamily` não foi reproduzido sinteticamente em bancada de teste isolada nem em contêineres CI headless rodando Vulkan lavapipe/llvmpipe.
+- Não foi possível reproduzir artificialmente a rejeição de `Surface::configure` em ambiente controlado sem emulação de múltiplos adaptadores conflitantes sob X11.
+- Por essa razão, a engenharia do NEXO evita correções cegas ou alterações no upstream Rune, mantendo a investigação aberta e documentada e priorizando a coleta de telemetria diagnóstica (`RUNE_GPU_LOG=1`) caso o comportamento volte a ser observado.
+
+### 4.6. Validação Genuína de Ciclo de Vida Nativo e Encerramento
+Para garantir a estabilidade do ciclo de vida da aplicação nativa independentemente de particularidades de GPU:
+
+1. **Validação Headless Determinística:**
+   - O teste `native_runtime_lifecycle_repeated_init_render_and_clean_drop` (em `crates/nexo-desktop/tests/lifecycle_tests.rs`) instancia sequencialmente o `Runtime` do Rune por 5 iterações completas, renderizando frames, alternando temas e destruindo as instâncias sem vazamentos de memória ou panics de encerramento.
+
+2. **Validação de Processo Nativo Real com Protocolo EWMH (`_NET_CLOSE_WINDOW`):**
+   - O teste de integração `native_window_process_lifecycle_clean_exit` executa uma verificação real de processo de ponta a ponta:
+     - Dispara o binário real compilado `nexo-desktop` (`CARGO_BIN_EXE_nexo-desktop`) como processo filho.
+     - Implementa o guard RAII `ChildGuard`, garantindo que `child.kill()` e `child.wait()` sejam chamados automaticamente em caso de pânico ou término prematuro, prevenindo processos órfãos ou zumbis.
+     - Efetua polling de até 5 segundos via `wmctrl -l` para certificar que a janela intitulada "NEXO" foi instanciada com sucesso pelo gerenciador de janelas.
+     - Envia requisição oficial de encerramento através do protocolo EWMH (`wmctrl -c NEXO`), despachando a mensagem cliente `_NET_CLOSE_WINDOW`.
+     - Aguarda o encerramento do processo e valida que o código de saída é estritamente `0` (`status.success()`).
+     - Lê o arquivo de log temporário gerado e assegura que não ocorreram mensagens de erro fatal ou pânico (`panicked at`, `fatal runtime error`).
+     - Em ambientes CI puramente headless (sem `DISPLAY`/`WAYLAND_DISPLAY` ou sem `wmctrl`), o teste executa skip explícito com mensagem informativa, evitando falsas alegações de conformidade de processo.
 
 ---
 
@@ -130,8 +164,15 @@ Para verificar o ciclo de vida da janela nativa e a resposta a eventos fora do a
 ### Pré-requisitos
 - Sessão gráfica ativa (X11 ou Wayland).
 - Driver Vulkan instalado (`mesa-vulkan-drivers` ou driver proprietário).
+- Pacote `wmctrl` (para automação via linha de comando).
 
-### Execução Interativa
+### Execução Automatizada do Teste de Ciclo de Vida
+```bash
+cargo test -p nexo-desktop --test lifecycle_tests -- --nocapture
+```
+Executa a validação headless e, caso detecte sessão gráfica com window manager compatível com EWMH, abre a janela real, envia `wmctrl -c NEXO` e valida o encerramento com código `0`.
+
+### Execução Interativa Manual
 ```bash
 cargo run -p nexo-desktop
 ```
@@ -157,6 +198,7 @@ cargo run -p nexo-desktop
 ### Estratégia de CI Headless
 Em runners GitHub Actions (`ubuntu-latest`), onde não há servidor X11 ou GPU física disponível:
 - A suíte automatizada `cargo test --workspace --locked` executa 18 testes determinísticos via headless `Runtime::new()`.
+- O teste de integração de janela nativa faz skip transparente quando `DISPLAY` e `wmctrl` estão ausentes.
 - A geração de snapshots visuais (`cargo run -p nexo-desktop -- --snap <path>`) valida a árvore de layout, renderização de tipografia e estilo sem necessidade de janela nativa.
 
 ---
