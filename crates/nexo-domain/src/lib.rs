@@ -1,7 +1,11 @@
 pub mod error;
+pub mod model;
 pub mod types;
 
 pub use error::{NexoError, Result};
+pub use model::{
+    Affiliation, Organization, OwnerType, RepositoryOwner, Snapshot, SnapshotMetadata, TreeSignals,
+};
 pub use types::{NexoState, Repository, ViewMode};
 
 #[cfg(test)]
