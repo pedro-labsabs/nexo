@@ -140,6 +140,7 @@ pub fn poll_child_window<F>(
 where
     F: FnMut() -> Result<WindowInfo, WindowBindingError>,
 {
+    let child_pid = child.id();
     let start = Instant::now();
     while start.elapsed() < timeout {
         if let Ok(Some(status)) = child.try_wait() {
@@ -148,7 +149,12 @@ where
         }
 
         match fetch_window() {
-            Ok(window) => return Ok(window),
+            Ok(window) => {
+                if window.pid == child_pid {
+                    return Ok(window);
+                }
+                // Janela pertence a outro PID; continua aguardando a janela do processo filho
+            }
             Err(WindowBindingError::PidNotFound(_)) => {
                 // Continua aguardando a criação e mapeamento da janela
             }
@@ -247,7 +253,9 @@ fn native_window_process_lifecycle_clean_exit() {
             // Prossegue com a inicialização e verificação nativa
         }
         EnvironmentSupport::MissingDisplay => {
-            eprintln!("SKIPPED: Nenhum display gráfico detectado (DISPLAY e WAYLAND_DISPLAY ausentes).");
+            eprintln!(
+                "SKIPPED: Nenhum display gráfico detectado (DISPLAY e WAYLAND_DISPLAY ausentes)."
+            );
             return;
         }
         EnvironmentSupport::PureWaylandWithoutX11 => {
@@ -960,8 +968,155 @@ fn regression_wmctrl_execution_failure_is_not_masked_as_pid_not_found() {
 
     assert_eq!(
         result,
-        Err(LifecycleError::WindowBinding(WindowBindingError::WmctrlExecutionFailed(1))),
+        Err(LifecycleError::WindowBinding(
+            WindowBindingError::WmctrlExecutionFailed(1)
+        )),
         "Falha na comunicação com wmctrl deve abortar imediatamente com erro tipado, nunca ser mascarada como PidNotFound"
     );
 }
 
+// ============================================================================
+// Os 7 Cenários Obrigatórios de Validação Gráfica e Ciclo de Vida (Task 3)
+// ============================================================================
+
+/// Cenário 1: Sessão X11 com EWMH funcional é identificada como Supported.
+#[test]
+fn regression_scenario_1_x11_ewmh_functional_supported() {
+    let support = check_environment_support(Some(":0"), None, true, || Ok(()));
+    assert_eq!(support, EnvironmentSupport::Supported);
+}
+
+/// Cenário 2: Ambiente sem DISPLAY e sem WAYLAND_DISPLAY retorna MissingDisplay.
+#[test]
+fn regression_scenario_2_missing_display_and_wayland() {
+    assert_eq!(
+        check_environment_support(None, None, true, || Ok(())),
+        EnvironmentSupport::MissingDisplay
+    );
+    assert_eq!(
+        check_environment_support(Some("  "), Some(""), true, || Ok(())),
+        EnvironmentSupport::MissingDisplay
+    );
+}
+
+/// Cenário 3: Wayland puro sem acesso a X11/EWMH retorna PureWaylandWithoutX11.
+#[test]
+fn regression_scenario_3_pure_wayland_without_x11() {
+    assert_eq!(
+        check_environment_support(None, Some("wayland-0"), true, || Ok(())),
+        EnvironmentSupport::PureWaylandWithoutX11
+    );
+    assert_eq!(
+        check_environment_support(Some(""), Some("wayland-1"), false, || Ok(())),
+        EnvironmentSupport::PureWaylandWithoutX11
+    );
+}
+
+/// Cenário 4: Presença de wmctrl, mas falha na sua execução retorna WmctrlCommunicationFailed.
+#[test]
+fn regression_scenario_4_wmctrl_present_but_execution_fails() {
+    assert_eq!(
+        check_environment_support(Some(":0"), None, true, || Err(1)),
+        EnvironmentSupport::WmctrlCommunicationFailed(1)
+    );
+    assert_eq!(
+        check_environment_support(Some(":1"), Some("wayland-0"), true, || Err(127)),
+        EnvironmentSupport::WmctrlCommunicationFailed(127)
+    );
+}
+
+/// Cenário 5: Processo filho com falha de inicialização em ambiente comprovadamente suportado
+/// resulta em erro real de PrematureExit, nunca sendo convertido em skip.
+#[test]
+fn regression_scenario_5_child_premature_exit_preserved_as_failure() {
+    let child = Command::new("false")
+        .spawn()
+        .expect("Failed to spawn process that exits with error");
+    let mut guard = ChildGuard(Some(child));
+
+    let dummy_fetch = || {
+        Ok(WindowInfo {
+            id: "0x123".into(),
+            desktop: 0,
+            pid: 9999,
+            host: "host".into(),
+            title: "NEXO".into(),
+        })
+    };
+
+    let result = poll_child_window(
+        guard.0.as_mut().unwrap(),
+        Duration::from_millis(500),
+        Duration::from_millis(20),
+        dummy_fetch,
+    );
+
+    match result {
+        Err(LifecycleError::PrematureExit(code)) => {
+            assert_ne!(
+                code, 0,
+                "Deve preservar falha real do processo (código != 0)"
+            );
+        }
+        other => panic!("Esperava PrematureExit com código de erro, obteve: {other:?}"),
+    }
+}
+
+/// Cenário 6: Preservação de janelas preexistentes com o mesmo título NEXO.
+#[test]
+fn regression_scenario_6_preexisting_windows_preserved() {
+    let windows = vec![
+        WindowInfo {
+            id: "0x01".into(),
+            desktop: 0,
+            pid: 1001,
+            host: "host".into(),
+            title: "NEXO".into(),
+        },
+        WindowInfo {
+            id: "0x02".into(),
+            desktop: 0,
+            pid: 1002,
+            host: "host".into(),
+            title: "NEXO".into(),
+        },
+    ];
+
+    // Busca janela do PID 2000 (o filho atual do teste)
+    let result = find_window_by_pid(&windows, 2000);
+    assert_eq!(
+        result,
+        Err(WindowBindingError::PidNotFound(2000)),
+        "Janelas preexistentes de outros PIDs não devem ser associadas"
+    );
+}
+
+/// Cenário 7: Encerramento bem-sucedido por Window ID e PID associados.
+#[test]
+fn regression_scenario_7_clean_exit_by_exact_window_id_and_pid() {
+    let target_pid = 4321;
+    let windows = vec![
+        WindowInfo {
+            id: "0x01".into(),
+            desktop: 0,
+            pid: 1111,
+            host: "host".into(),
+            title: "NEXO".into(),
+        },
+        WindowInfo {
+            id: "0x0a1b2c".into(),
+            desktop: 0,
+            pid: target_pid,
+            host: "host".into(),
+            title: "NEXO".into(),
+        },
+    ];
+
+    let found =
+        find_window_by_pid(&windows, target_pid).expect("Deve encontrar janela associada ao PID");
+    assert_eq!(
+        found.id, "0x0a1b2c",
+        "Deve associar o Window ID exato da janela do processo"
+    );
+    assert_eq!(found.pid, target_pid);
+}
