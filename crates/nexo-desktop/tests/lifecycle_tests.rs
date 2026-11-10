@@ -94,62 +94,92 @@ fn native_window_process_lifecycle_clean_exit() {
         .spawn()
         .expect("Failed to spawn nexo-desktop binary");
 
+    let child_pid = child.id();
     let mut guard = ChildGuard(Some(child));
 
-    // Polling de até 5 segundos buscando janela "NEXO" via `wmctrl -l`
+    // Polling de até 5 segundos buscando janela vinculada exclusivamente ao PID via `wmctrl -l -p`
     let start = Instant::now();
     let timeout = Duration::from_secs(5);
     let poll_interval = Duration::from_millis(100);
 
-    let mut window_found = false;
+    let mut matched_window = None;
     while start.elapsed() < timeout {
         // Verifica se o processo filho terminou prematuramente com erro
         if let Some(child) = guard.0.as_mut()
             && let Ok(Some(status)) = child.try_wait()
         {
+            let logs = std::fs::read_to_string(&log_path).unwrap_or_default();
             panic!(
-                "Child process exited unexpectedly early with status: {:?}",
-                status
+                "Child process (PID {child_pid}) exited unexpectedly early with status: {status:?}. Logs:\n{logs}"
             );
         }
 
-        let output = Command::new("wmctrl").arg("-l").output();
+        let output = Command::new("wmctrl").args(["-l", "-p"]).output();
         if let Ok(out) = output {
             let stdout_str = String::from_utf8_lossy(&out.stdout);
-            for line in stdout_str.lines() {
-                let parts: Vec<&str> = line.split_whitespace().collect();
-                if parts.len() >= 4 {
-                    let title = parts[3..].join(" ");
-                    if title == "NEXO" || title.contains("NEXO") {
-                        window_found = true;
-                        break;
-                    }
-                } else if line.contains("NEXO") {
-                    window_found = true;
+            let windows = parse_wmctrl_l_p(&stdout_str);
+            match find_window_by_pid(&windows, child_pid) {
+                Ok(window) => {
+                    assert_eq!(
+                        window.pid, child_pid,
+                        "Window PID must strictly match child process PID"
+                    );
+                    matched_window = Some(window);
                     break;
+                }
+                Err(WindowBindingError::PidNotSupported) => {
+                    eprintln!(
+                        "SKIPPED: Window manager does not support _NET_WM_PID (all windows reported PID 0). Aborting native window test safely without modifying any windows."
+                    );
+                    return;
+                }
+                Err(WindowBindingError::PidNotFound(_)) => {
+                    // Continua aguardando a janela ser criada e mapeada pelo window manager
+                }
+                Err(WindowBindingError::AmbiguousWindows(ids)) => {
+                    eprintln!(
+                        "WARNING: Multiple windows found for PID {child_pid}: {ids:?}. Continuing to poll..."
+                    );
                 }
             }
         }
 
-        if window_found {
-            break;
-        }
         std::thread::sleep(poll_interval);
     }
 
-    assert!(
-        window_found,
-        "Native window titled 'NEXO' was not found within 5 seconds"
+    let target_window = match matched_window {
+        Some(w) => w,
+        None => {
+            if let Some(child) = guard.0.as_mut()
+                && let Ok(Some(status)) = child.try_wait()
+            {
+                let logs = std::fs::read_to_string(&log_path).unwrap_or_default();
+                panic!(
+                    "Child process (PID {child_pid}) exited unexpectedly early before window association with status: {status:?}. Logs:\n{logs}"
+                );
+            }
+            let logs = std::fs::read_to_string(&log_path).unwrap_or_default();
+            panic!(
+                "Native window for PID {child_pid} was not found within 5 seconds. Logs:\n{logs}"
+            );
+        }
+    };
+
+    println!(
+        "Associated window found: ID {}, PID {}, Title: {}",
+        target_window.id, target_window.pid, target_window.title
     );
 
-    // Envia requisição graciosa de encerramento via `wmctrl -c NEXO` (_NET_CLOSE_WINDOW)
+    // Envia requisição graciosa de encerramento estritamente por Window ID via `wmctrl -i -c` (_NET_CLOSE_WINDOW).
+    // NUNCA usa fechamento por título.
     let close_status = Command::new("wmctrl")
-        .args(["-c", "NEXO"])
+        .args(["-i", "-c", &target_window.id])
         .status()
-        .expect("Failed to execute wmctrl -c NEXO");
+        .expect("Failed to execute wmctrl -i -c");
     assert!(
         close_status.success(),
-        "Failed to send close message via wmctrl"
+        "Failed to send close message to window ID {} via wmctrl",
+        target_window.id
     );
 
     // Aguarda a saída do processo filho (com timeout de até 5 segundos)
@@ -180,13 +210,18 @@ fn native_window_process_lifecycle_clean_exit() {
         None => {
             let _ = child.kill();
             let _ = child.wait();
-            panic!("Child process failed to exit cleanly within timeout after close request");
+            let logs = std::fs::read_to_string(&log_path).unwrap_or_default();
+            panic!(
+                "Child process failed to exit cleanly within timeout after close request for window ID {}. Logs:\n{logs}",
+                target_window.id
+            );
         }
     };
 
-    assert!(
-        status.success(),
-        "Child process exited with non-zero exit code: {:?}",
+    assert_eq!(
+        status.code(),
+        Some(0),
+        "Child process must exit with code 0: {:?}",
         status
     );
 
